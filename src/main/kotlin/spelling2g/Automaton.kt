@@ -1,51 +1,47 @@
-// Implements a levenshtein automaton as described at
+// Implements a levenshtein automaton as described in
 // https://julesjacobs.com/2015/06/17/disqus-levenshtein-simple-and-fast.html
 
 package spelling2g
 
-data class State(val indices: List<Int>, val values: List<Double>)
-
-object Transliteration {
-    private var mapping = hashMapOf<Char, String>(
-        'ä' to "ae",
-        'ö' to "oe",
-        'ü' to "ue",
-        'ß' to "ss"
-    )
-
-    operator fun get(char: Char) : String? {
-        return mapping[char]
-    }
-}
+data class State(val indices: List<Int>, val values: List<Int>)
 
 class Automaton(string: String, maxEdits: Int) {
-    var string = string
+    val string = string
     var maxEdits = maxEdits
+    val transliterableString: TransliterableString by lazy { string.toTransliterableString() }
 
-    fun correct(node: TrieNode): Correction? {
-        node.lookup(string)?.let {
-            return Correction(string = string, distance = 0.0, score = it.score)
-        }
+    /*
+     * Returns all available corrections which have distance <= maxEdits.
+     * Matches are determined by whether or not the respective trie node is
+     * a word end. That means partial matches delimited by whitespace are
+     * also considered as matches.
+     */
 
+    fun correct(node: TrieNode): List<Correction> {
         return correctRecursive(node, start())
     }
 
-    public fun correctRecursive(node: TrieNode, state: State): Correction? {
-        var res: Correction? = null
+    public fun correctRecursive(node: TrieNode, state: State): List<Correction> {
+        var res = ArrayList<Correction>()
+        var distance = state.values.last()
 
-        if (node.isTerminal && isMatch(state)) {
-            res = Correction(string = node.getPhrase(), distance = state.values.last(), score = node.score)
+        if (node.isWordEnd && isMatch(state)) {
+            res.add(
+                Correction(
+                    value    = node.getPhrase().toTransliterableString(),
+                    original = transliterableString,
+                    distance = distance,
+                    score    = node.score,
+                    node     = node
+                )
+            )
         }
 
         for ((char, newNode) in node.children) {
             var newState = step(state, char, node.char)
 
             if (canMatch(newState)) {
-                var candidate = correctRecursive(newNode, newState) ?: continue
-
-                if (res == null || candidate < res) {
-                    res = candidate
-                }
+                res.addAll(correctRecursive(newNode, newState))
             }
         }
 
@@ -55,7 +51,7 @@ class Automaton(string: String, maxEdits: Int) {
     private fun start(): State {
         return State(
             indices = ArrayList<Int>(maxEdits).apply { addAll(0..maxEdits) },
-            values = ArrayList<Double>(maxEdits).apply { addAll((0..maxEdits).map { it.toDouble() }) }
+            values = ArrayList<Int>(maxEdits).apply { addAll(0..maxEdits) }
         )
     }
 
@@ -64,7 +60,7 @@ class Automaton(string: String, maxEdits: Int) {
         var values = curState.values
 
         var newIndices = ArrayList<Int>(maxEdits)
-        var newValues = ArrayList<Double>(maxEdits)
+        var newValues = ArrayList<Int>(maxEdits)
 
         if (indices.size > 0 && indices[0] == 0 && values[0] < maxEdits) {
             newIndices.add(0)
@@ -94,24 +90,24 @@ class Automaton(string: String, maxEdits: Int) {
         return State(indices = newIndices, values = newValues)
     }
 
-    private fun calculateCost(i: Int, curChar: Char, prevChar: Char?): Double {
-        if (string[i] == curChar) return 0.0
-
-        // transposition
-        if (i > 0 && prevChar != null && string[i - 1] == curChar && string[i] == prevChar) return 0.0
-
-        // transliteration
-        var ascii: String? = Transliteration[curChar]
-        if (ascii != null && i > 0 && string[i - 1] == ascii[0] && string[i] == ascii[1]) return -0.5
-
-        return 1.0
-    }
-
     private fun isMatch(state: State): Boolean {
         return state.indices.size > 0 && state.indices.last() == string.length
     }
 
     private fun canMatch(state: State): Boolean {
         return state.indices.size > 0
+    }
+
+    private fun calculateCost(i: Int, curChar: Char, prevChar: Char?): Int {
+        if (string[i] == curChar) return 0
+
+        // transposition
+        if (i > 0 && prevChar != null && string[i - 1] == curChar && string[i] == prevChar) return 0
+
+        // transliteration
+        var ascii: String? = Transliterator.map(curChar)
+        if (ascii != null && i > 0 && string[i - 1] == ascii[0] && string[i] == ascii[1]) return 0
+
+        return 1
     }
 }
