@@ -26,8 +26,6 @@ class QueryMapper(string: String, language: String, tries: Tries) {
             var max = Math.min(maxLookahead, words.size - i)
 
             for (u in 1..max) {
-                println(">> ${words.slice(i..(i+u-1)).joinToString(" ")}")
-
                 val correction = correct(words, i, i + u -1, trie).minOrNull() ?: break
 
                 // If the current correction has zero distance and the longer one distance > 0,
@@ -77,13 +75,19 @@ class QueryMapper(string: String, language: String, tries: Tries) {
 
             correction.node?.children?.get(' ')?.let {
                 res.addAll(correct(words, firstIndex + 1, lastIndex, it).map { cur ->
-                    Correction(cur.value, cur.original, cur.distance + correction.distance, cur.score, cur.node)
+                    val suffix = cur.value.string.replaceFirst(correction.node.getPhrase(), "")
+                    val value = "${correction.value.string}${suffix}".toTransliterableString()
+
+                    Correction(value, cur.original, cur.distance + correction.distance, cur.score, cur.node)
                 })
             }
 
             correction.node?.let {
                 res.addAll(correct(words, firstIndex + 1, lastIndex, it).map { cur ->
-                    Correction(cur.value, cur.original, cur.distance + correction.distance + 1, cur.score, cur.node)
+                    val suffix = cur.value.string.replaceFirst(correction.node.getPhrase(), "")
+                    val value = "${correction.value.string}${suffix}".toTransliterableString()
+
+                    Correction(value, cur.original, cur.distance + correction.distance + 1, cur.score, cur.node)
                 })
             }
 

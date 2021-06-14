@@ -15,9 +15,9 @@ class Correction(
 ) : Comparable<Correction> {
     val value = value
     val original = original
-    var distance = distance
+    val distance = distance
     val score = score
-    var node = node
+    val node = node
     val matchesTransliterated: Boolean by lazy { value.transliteratedString == original.transliteratedString }
 
     /**

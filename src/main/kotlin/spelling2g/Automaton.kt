@@ -45,6 +45,31 @@ class Automaton(string: String, maxEdits: Int) {
             }
         }
 
+        // Additionally try to split the current word and continue correcting
+        // from root node.
+
+        if (node.isWordEnd) {
+            var newState = step(state, ' ', node.char)
+
+            if (canMatch(newState)) {
+                val corrections = correctRecursive(node.root(), newState).map { correction ->
+                    // When splitting, the already corrected prefix needs to
+                    // be prepended to the corrections and the individual scores
+                    // may not be respected.
+
+                    Correction(
+                        "${node.getPhrase()} ${correction.value.string}".toTransliterableString(),
+                        correction.original,
+                        distance = correction.distance,
+                        score = 0.0,
+                        node = correction.node
+                    )
+                }
+
+                res.addAll(corrections)
+            }
+        }
+
         return res
     }
 
