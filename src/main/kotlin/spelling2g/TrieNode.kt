@@ -1,9 +1,9 @@
 package spelling2g
 
-/*
- * Implements a standard trie. The full string is not stored in each trie node to minimize
- * memory usage. Instead, it can be retrieved by traversing up the trie and concatenating
- * the characters of each node.
+/**
+ * Implements a trie. The full string is not stored in each trie node to
+ * minimize memory usage. Instead, it can be retrieved by traversing up
+ * the trie and concatenating the characters of each node.
  */
 
 class TrieNode(parent: TrieNode? = null, char: Char? = null) {

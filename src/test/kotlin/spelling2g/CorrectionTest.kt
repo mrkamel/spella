@@ -42,7 +42,6 @@ class CorrectionTest : DescribeSpec({
                 original = "original1".toTransliterableString(),
                 distance = 1,
                 score = 1.0,
-                node = null
             )
 
             var correction2 = CorrectionFactory.build(
@@ -50,7 +49,6 @@ class CorrectionTest : DescribeSpec({
                 original = "original2".toTransliterableString(),
                 distance = 1,
                 score = 1.0,
-                node = null
             )
 
             correction1.compareTo(correction2).shouldBe(0)
@@ -64,7 +62,6 @@ class CorrectionTest : DescribeSpec({
                 original = "original1".toTransliterableString(),
                 distance = 1,
                 score = 1.0,
-                node = null
             )
 
             var correction2 = CorrectionFactory.build(
@@ -72,7 +69,6 @@ class CorrectionTest : DescribeSpec({
                 original = "original2".toTransliterableString(),
                 distance = 1,
                 score = 1.0,
-                node = null
             )
 
             correction1.equals(correction2).shouldBe(true)

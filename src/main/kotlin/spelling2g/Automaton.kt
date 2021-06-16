@@ -10,29 +10,31 @@ class Automaton(string: String, maxEdits: Int) {
     var maxEdits = maxEdits
     val transliterableString: TransliterableString by lazy { string.toTransliterableString() }
 
-    /*
+    /**
      * Returns all available corrections which have distance <= maxEdits.
      * Matches are determined by whether or not the respective trie node is
      * a word end. That means partial matches delimited by whitespace are
      * also considered as matches.
      */
 
-    fun correct(node: TrieNode): List<Correction> {
-        return correctRecursive(node, start())
+    fun correct(nodeList: TrieNodeList): List<Correction> {
+        return correctRecursive(nodeList, start())
     }
 
-    public fun correctRecursive(node: TrieNode, state: State): List<Correction> {
+    public fun correctRecursive(nodeList: TrieNodeList, state: State): List<Correction> {
+        val node = nodeList.head
+        val nodes = nodeList.tail
         var res = ArrayList<Correction>()
-        var distance = state.values.last()
+        val distance = state.values.last()
 
         if (node.isWordEnd && isMatch(state)) {
             res.add(
                 Correction(
-                    value    = node.getPhrase().toTransliterableString(),
+                    value = nodeList.getPhrase().toTransliterableString(),
                     original = transliterableString,
                     distance = distance,
-                    score    = node.score,
-                    node     = node
+                    score = if (nodes.size > 0) 0.0 else node.score,
+                    nodeList = nodeList,
                 )
             )
         }
@@ -41,32 +43,18 @@ class Automaton(string: String, maxEdits: Int) {
             var newState = step(state, char, node.char)
 
             if (canMatch(newState)) {
-                res.addAll(correctRecursive(newNode, newState))
+                res.addAll(correctRecursive(TrieNodeList(newNode, nodes), newState))
             }
         }
 
         // Additionally try to split the current word and continue correcting
-        // from root node.
+        // from the root node.
 
         if (node.isWordEnd) {
             var newState = step(state, ' ', node.char)
 
             if (canMatch(newState)) {
-                val corrections = correctRecursive(node.root(), newState).map { correction ->
-                    // When splitting, the already corrected prefix needs to
-                    // be prepended to the corrections and the individual scores
-                    // may not be respected.
-
-                    Correction(
-                        "${node.getPhrase()} ${correction.value.string}".toTransliterableString(),
-                        correction.original,
-                        distance = correction.distance,
-                        score = 0.0,
-                        node = correction.node
-                    )
-                }
-
-                res.addAll(corrections)
+                res.addAll(correctRecursive(TrieNodeList(node.root(), nodes + listOf(node)), newState))
             }
         }
 
@@ -126,10 +114,12 @@ class Automaton(string: String, maxEdits: Int) {
     private fun calculateCost(i: Int, curChar: Char, prevChar: Char?): Int {
         if (string[i] == curChar) return 0
 
-        // transposition
+        // Handle transposition
+
         if (i > 0 && prevChar != null && string[i - 1] == curChar && string[i] == prevChar) return 0
 
-        // transliteration
+        // Handle transliteration
+
         var ascii: String? = Transliterator.map(curChar)
         if (ascii != null && i > 0 && string[i - 1] == ascii[0] && string[i] == ascii[1]) return 0
 

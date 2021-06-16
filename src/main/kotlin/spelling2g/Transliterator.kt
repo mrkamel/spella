@@ -1,7 +1,7 @@
 package spelling2g
 
-/*
- * Transliterates string to the respective ascii version.
+/**
+ * Transliterates a string to its respective ascii version.
  */
 
 object Transliterator {

@@ -1,9 +1,9 @@
 package spelling2g
 
 /**
- * The Correction class represents a correction and implements Comparable to be able
- * to find the best correction. It takes TransliterableString's for performance reasons,
- * as those can memoize the transliterations.
+ * The Correction class represents a correction and implements Comparable to
+ * be able to find the best correction. It takes TransliterableStrings for
+ * performance reasons, as those can memoize the transliterations.
  */
 
 class Correction(
@@ -11,18 +11,20 @@ class Correction(
     original: TransliterableString,
     distance: Int,
     score: Double,
-    node: TrieNode? = null
+    nodeList: TrieNodeList? = null,
 ) : Comparable<Correction> {
     val value = value
     val original = original
     val distance = distance
     val score = score
-    val node = node
+    val nodeList = nodeList
     val matchesTransliterated: Boolean by lazy { value.transliteratedString == original.transliteratedString }
 
     /**
-     * A correction is better/smaller when the distance is less, it matches the original
-     * when transliterated or the score is higher.
+     * A correction is better/smaller when
+     * 1. the distance is less
+     * 2. it matches the original when transliterated
+     * 3. the score is higher
      */
 
 	override operator fun compareTo(other: Correction): Int {
@@ -39,8 +41,8 @@ class Correction(
 	}
 
     /**
-     * A correction is equal to another correction if the values, distances and scores are
-     * equal.
+     * A correction is equal to another correction if the values, distances
+     * and scores are equal.
      */
 
     override fun equals(other: Any?): Boolean {

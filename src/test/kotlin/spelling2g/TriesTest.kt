@@ -31,12 +31,12 @@ class TriesTest : DescribeSpec({
         it("reads and inserts the data from the specified file") {
             tries.addFile("test.dic")
 
-            tries["en"].shouldNotBeNull().lookup("some phrase")!!.asClue {
+            tries["en"]!!.lookup("some phrase")!!.asClue {
                 it.score.shouldBe(1.0)
                 it.getPhrase().shouldBe("some phrase")
             }
 
-            tries["de"].shouldNotBeNull().lookup("andere phrase")!!.asClue {
+            tries["de"]!!.lookup("andere phrase")!!.asClue {
                 it.score.shouldBe(2.0)
                 it.getPhrase().shouldBe("andere phrase")
             }

@@ -11,7 +11,7 @@ class TrieNodeTest : DescribeSpec({
             val trieNode = TrieNode()
             trieNode.insert("some phrase", 1.0)
 
-            trieNode.lookup("some phrase").shouldNotBeNull().run { getPhrase().shouldBe("some phrase") }
+            trieNode.lookup("some phrase")!!.run { getPhrase().shouldBe("some phrase") }
         }
 
         it("does not do anything if the specified string is empty") {
@@ -26,17 +26,17 @@ class TrieNodeTest : DescribeSpec({
             val trieNode = TrieNode()
             trieNode.insert("some phrase", 1.0)
 
-            trieNode.lookup("some").shouldNotBeNull().isWordEnd.shouldBe(true)
-            trieNode.lookup("some phrase").shouldNotBeNull().isWordEnd.shouldBe(true)
-            trieNode.lookup("som").shouldNotBeNull().isWordEnd.shouldBe(false)
+            trieNode.lookup("some")!!.isWordEnd.shouldBe(true)
+            trieNode.lookup("some phrase")!!.isWordEnd.shouldBe(true)
+            trieNode.lookup("som")!!.isWordEnd.shouldBe(false)
         }
 
         it("sets the score for the last node") {
             val trieNode = TrieNode()
             trieNode.insert("some phrase", 1.0)
 
-            trieNode.lookup("some").shouldNotBeNull().score.shouldBe(0.0)
-            trieNode.lookup("some phrase").shouldNotBeNull().score.shouldBe(1.0)
+            trieNode.lookup("some")!!.score.shouldBe(0.0)
+            trieNode.lookup("some phrase")!!.score.shouldBe(1.0)
         }
     }
 
@@ -64,7 +64,7 @@ class TrieNodeTest : DescribeSpec({
             val trieNode = TrieNode()
             trieNode.insert("some phrase", 1.0)
 
-            trieNode.lookup("some phrase").shouldNotBeNull().getPhrase().shouldBe("some phrase")
+            trieNode.lookup("some phrase")!!.getPhrase().shouldBe("some phrase")
         }
     }
 })

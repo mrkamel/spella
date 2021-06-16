@@ -2,9 +2,9 @@ package spelling2g
 
 import java.io.File
 
-/*
- * The Tries class is used to build one trie per language. It reads the input files
- * and inserts it to the trie for the respective language.
+/**
+ * The Tries class is used to build one trie per language. It reads the
+ * input files and inserts it to the trie for the respective language.
  */
 
 class Tries {

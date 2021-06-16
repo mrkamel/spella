@@ -6,8 +6,8 @@ object CorrectionFactory {
         original: TransliterableString = "original".toTransliterableString(),
         distance: Int = 1,
         score: Double = 1.0,
-        node: TrieNode? = null
+        nodeList: TrieNodeList? = null,
     ) : Correction {
-        return Correction(value, original, distance, score, node)
+        return Correction(value, original, distance, score, nodeList)
     }
 }
