@@ -15,8 +15,9 @@ fun main(args: Array<String>) {
 
         var t1 = System.currentTimeMillis()
 
-        var correction = QueryMapper(input, language = "de", tries = tries).map(maxLookahead = 5)
-        println("${correction?.value?.string}, distance: ${correction?.distance}, score: ${correction?.score}")
+        var queryMapper = QueryMapper(input, language = "de", tries = tries)
+        var correction = queryMapper.map(maxLookahead = 5)
+        println("${correction?.value?.string}, distance: ${correction?.distance}, score: ${correction?.score}, iterations: ${queryMapper.iterations}")
 
         println(System.currentTimeMillis() - t1)
     }

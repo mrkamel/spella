@@ -14,6 +14,7 @@ class QueryMapper(string: String, language: String, tries: Tries) {
     val language = language
     val tries = tries
     val trie = tries[language]
+    var iterations = 0
 
     fun map(maxLookahead: Int = 5) : Correction? {
         if (trie == null) return null
@@ -25,6 +26,7 @@ class QueryMapper(string: String, language: String, tries: Tries) {
         while (i < words.size) {
             var max = Math.min(maxLookahead, words.size - i)
             val correction = correct(words, i, i + max - 1, TrieNodeList(trie))
+                ?: Correction(words[i].toTransliterableString(), words[i].toTransliterableString(), distance = 0, score = 0.0)
 
             corrections.add(correction)
 
@@ -40,73 +42,73 @@ class QueryMapper(string: String, language: String, tries: Tries) {
     }
 
     /**
-     * Find the best correction for a number of words. Candidates are sorted by
-     * 1. number of restarts from the trie root (less is better)
-     * 2. The number of words corrected (more is better)
-     * 3. The correction itself with its sort order
-     * In case no correction can be found, the first word is used and returned as
-     * correction.
-     */
-
-    private fun correct(
-        words: List<String>,
-        firstIndex: Int,
-        lastIndex: Int,
-        nodeList: TrieNodeList,
-    ) : Correction {
-        val correction = correctAll(words, firstIndex, lastIndex, nodeList)
-            .minWithOrNull(compareBy({ it.nodeList!!.tail.size }, { -it.original.wordCount }, { it }))
-
-        return correction ?: Correction(
-            words[firstIndex].toTransliterableString(),
-            words[firstIndex].toTransliterableString(),
-            distance = 0,
-            score = 0.0,
-        )
-    }
-
-    /**
-     * Returns the longest available corrections that match the edit distance criteria by
-     * recursively and greedily correcting the list of words up until a word can not be
-     * corrected anymore. This guarantees that every single word has the specified max
-     * edit distance at most. Otherwise we'd need to increase the max edit distance the
+     * Returns the best correction that match the edit distance criteria by recursively
+     * and greedily correcting the list of words up until a word can not be corrected
+     * anymore. This guarantees that every single word has the specified max edit
+     * distance at most. Otherwise we'd need to increase the max edit distance the
      * longer the string we try to correct, which is not optimal performance wise and we
-     * wouldn't be able to guarantee a max edit distance per word.
+     * wouldn't be able to guarantee a max edit distance per word. As we prefer
+     * corrections with less trie restarts, we keep track of the current mininum number
+     * of restarts to prune the search space when a path already is above that minimum.
      */
 
-     private fun correctAll(
+     private fun correct(
         words: List<String>,
         firstIndex: Int,
         lastIndex: Int,
         nodeList: TrieNodeList,
         phrase: Boolean = false,
-     ) : List<Correction> {
+        maxRestarts: Int = Int.MAX_VALUE,
+     ) : Correction? {
          val word = words[firstIndex]
          val maxEdits = if (word.length <= 3) 0 else 1
          val string = if (phrase) " $word" else word
+         var bestCorrection: Correction? = null
+         var curMaxRestarts = maxRestarts
 
-         return Automaton(string = string, maxEdits = maxEdits).correct(nodeList).flatMap { correction ->
-            if (firstIndex == lastIndex) return@flatMap listOf(correction)
+         Automaton(string = string, maxEdits = maxEdits).correct(nodeList).forEach { correction ->
+            var currentCorrection = correction
 
-            val res = arrayListOf(correction)
+            if (firstIndex < lastIndex && correction.nodeList!!.tail.size <= curMaxRestarts) {
+                correct(words, firstIndex + 1, lastIndex, correction.nodeList, true, curMaxRestarts)?.let { cur ->
+                    var longerCorrection = Correction(
+                        cur.value,
+                        "${correction.original.string}${cur.original.string}".toTransliterableString(),
+                        cur.distance + correction.distance,
+                        cur.score,
+                        cur.nodeList,
+                    )
 
-            res.addAll(correctAll(words, firstIndex + 1, lastIndex, correction.nodeList!!, true).map { cur ->
-                Correction(
-                    cur.value,
-                    "${correction.original.string}${cur.original.string}".toTransliterableString(),
-                    cur.distance + correction.distance,
-                    cur.score,
-                    cur.nodeList,
-                )
-            })
-
-            res
+                    currentCorrection = bestCorrectionOf(currentCorrection, longerCorrection)
+                }
+            }
+            
+            bestCorrectionOf(bestCorrection ?: currentCorrection, currentCorrection).let {
+                bestCorrection = it
+                curMaxRestarts = it.nodeList!!.tail.size
+            }
         }
+
+        return bestCorrection
     }
 
     /**
-     * Optimization
-     * 1. Migrate correctAll to iterative instead of recursive
-     * 2. Keep the currency best correction continously check if a candidate can keep up with the current maximum
+     * returns the best correction out of two corrections. The criteria for choosing
+     * the best correction are:
+     * 1. number of restarts from the trie root (less is better)
+     * 2. The number of words corrected (more is better)
+     * 3. The correction itself with its sort order
      */
+
+    private fun bestCorrectionOf(correction1: Correction, correction2: Correction) : Correction {
+        if (correction1.nodeList!!.tail.size < correction2.nodeList!!.tail.size) return correction1
+        if (correction1.nodeList.tail.size > correction2.nodeList.tail.size) return correction2
+
+        if (correction1.original.wordCount > correction2.original.wordCount) return correction1
+        if (correction1.original.wordCount < correction2.original.wordCount) return correction2
+
+        if (correction1 < correction2) return correction1
+
+        return correction2
+    }
 }
