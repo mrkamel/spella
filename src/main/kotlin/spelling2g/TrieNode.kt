@@ -7,11 +7,11 @@ package spelling2g
  */
 
 class TrieNode(parent: TrieNode? = null, char: Char? = null) {
-    var parent = parent
-    var char = char
+    val parent = parent
+    val char = char
     var isWordEnd = false
     var score = 0.0
-    var children = HashMap<Char, TrieNode>()
+    val children = HashMap<Char, TrieNode>()
 
     fun insert(phrase: String, score: Double) {
         if (phrase.length == 0) return

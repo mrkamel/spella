@@ -8,12 +8,12 @@ import java.io.File
  */
 
 class Tries {
-    var tries = HashMap<String, TrieNode>()
+    val tries = HashMap<String, TrieNode>()
 
     fun addFile(path: String) {
         readFile(path) { lines ->
             lines.map { line -> line.split("\t") }
-                 .forEach { (language, phrase, score) ->
+                .forEach { (language, phrase, score) ->
                     tries.getOrPut(language) { TrieNode() }.insert(phrase.lowercase(), score.toDouble())
                 }
         }

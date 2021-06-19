@@ -18,8 +18,8 @@ object Transliterator {
     fun map(string: String): String {
         var res = StringBuilder()
 
-        for(char in string) {
-            var mapped = mapping[char]
+        for (char in string) {
+            val mapped = mapping[char]
             res.append(mapped ?: char)
         }
 

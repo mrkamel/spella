@@ -1,13 +1,12 @@
 package spelling2g
 
+import io.kotest.assertions.asClue
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import io.kotest.matchers.nulls.shouldNotBeNull
-import io.kotest.assertions.asClue
-import io.mockk.unmockkAll
-import io.mockk.spyk
 import io.mockk.every
+import io.mockk.spyk
+import io.mockk.unmockkAll
 
 class TriesTest : DescribeSpec({
     val tries = spyk(Tries())

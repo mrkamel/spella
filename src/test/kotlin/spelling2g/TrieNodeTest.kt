@@ -1,9 +1,9 @@
 package spelling2g
 
 import io.kotest.core.spec.style.DescribeSpec
-import io.kotest.matchers.shouldBe
-import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.shouldBe
 
 class TrieNodeTest : DescribeSpec({
     describe("insert") {
@@ -15,11 +15,11 @@ class TrieNodeTest : DescribeSpec({
         }
 
         it("does not do anything if the specified string is empty") {
-           val trieNode = TrieNode()
-           trieNode.insert("", 1.0)
+            val trieNode = TrieNode()
+            trieNode.insert("", 1.0)
 
-           trieNode.isWordEnd.shouldBe(false)
-           trieNode.parent.shouldBeNull()
+            trieNode.isWordEnd.shouldBe(false)
+            trieNode.parent.shouldBeNull()
         }
 
         it("sets isWordEnd to true for whitespaces and the last node") {

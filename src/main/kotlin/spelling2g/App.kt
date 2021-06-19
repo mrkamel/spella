@@ -1,7 +1,5 @@
 package spelling2g
 
-import io.javalin.Javalin
-
 fun main(args: Array<String>) {
     val tries = Tries()
 
@@ -17,7 +15,7 @@ fun main(args: Array<String>) {
 
         var queryMapper = QueryMapper(input, language = "de", tries = tries)
         var correction = queryMapper.map(maxLookahead = 5)
-        println("${correction?.value?.string}, distance: ${correction?.distance}, score: ${correction?.score}, iterations: ${queryMapper.iterations}")
+        println("${correction?.value?.string}, distance: ${correction?.distance}, score: ${correction?.score}")
 
         println(System.currentTimeMillis() - t1)
     }

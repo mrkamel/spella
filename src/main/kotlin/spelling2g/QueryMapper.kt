@@ -1,7 +1,5 @@
 package spelling2g
 
-import kotlin.comparisons.compareBy
-
 /**
  * The QueryMapper takes an input string, splits it by whitespace and greedily
  * searches for the longest correction. Uses intermediary nodes, i.e. the
@@ -14,17 +12,16 @@ class QueryMapper(string: String, language: String, tries: Tries) {
     val language = language
     val tries = tries
     val trie = tries[language]
-    var iterations = 0
 
-    fun map(maxLookahead: Int = 5) : Correction? {
+    fun map(maxLookahead: Int = 5): Correction? {
         if (trie == null) return null
 
-        var words = string.split(" ").filter { it.length > 0 }
-        var corrections = ArrayList<Correction>()
+        val words = string.split(" ").filter { it.length > 0 }
+        val corrections = ArrayList<Correction>()
         var i = 0
 
         while (i < words.size) {
-            var max = Math.min(maxLookahead, words.size - i)
+            val max = Math.min(maxLookahead, words.size - i)
             val correction = correct(words, i, i + max - 1, TrieNodeList(trie))
                 ?: Correction(words[i].toTransliterableString(), words[i].toTransliterableString(), distance = 0, score = 0.0)
 
@@ -34,10 +31,10 @@ class QueryMapper(string: String, language: String, tries: Tries) {
         }
 
         return Correction(
-            value    = corrections.map { it.value.string }.joinToString(", ").toTransliterableString(),
+            value = corrections.map { it.value.string }.joinToString(", ").toTransliterableString(),
             original = string.toTransliterableString(),
             distance = corrections.sumOf { it.distance },
-            score    = corrections.sumOf { it.score },
+            score = corrections.sumOf { it.score },
         )
     }
 
@@ -52,37 +49,37 @@ class QueryMapper(string: String, language: String, tries: Tries) {
      * of restarts to prune the search space when a path already is above that minimum.
      */
 
-     private fun correct(
+    private fun correct(
         words: List<String>,
         firstIndex: Int,
         lastIndex: Int,
         nodeList: TrieNodeList,
         phrase: Boolean = false,
         maxRestarts: Int = Int.MAX_VALUE,
-     ) : Correction? {
-         val word = words[firstIndex]
-         val maxEdits = if (word.length <= 3) 0 else 1
-         val string = if (phrase) " $word" else word
-         var bestCorrection: Correction? = null
-         var curMaxRestarts = maxRestarts
+    ): Correction? {
+        val word = words[firstIndex]
+        val maxEdits = if (word.length <= 3) 0 else 1
+        val string = if (phrase) " $word" else word
+        var bestCorrection: Correction? = null
+        var curMaxRestarts = maxRestarts
 
-         Automaton(string = string, maxEdits = maxEdits).correct(nodeList).forEach { correction ->
+        Automaton(string = string, maxEdits = maxEdits).correct(nodeList).forEach { correction ->
             var currentCorrection = correction
 
             if (firstIndex < lastIndex && correction.nodeList!!.tail.size <= curMaxRestarts) {
                 correct(words, firstIndex + 1, lastIndex, correction.nodeList, true, curMaxRestarts)?.let { cur ->
-                    var longerCorrection = Correction(
-                        cur.value,
-                        "${correction.original.string}${cur.original.string}".toTransliterableString(),
-                        cur.distance + correction.distance,
-                        cur.score,
-                        cur.nodeList,
+                    val longerCorrection = Correction(
+                        value = cur.value,
+                        original = "${correction.original.string}${cur.original.string}".toTransliterableString(),
+                        distance = cur.distance + correction.distance,
+                        score = cur.score,
+                        nodeList = cur.nodeList,
                     )
 
                     currentCorrection = bestCorrectionOf(currentCorrection, longerCorrection)
                 }
             }
-            
+
             bestCorrectionOf(bestCorrection ?: currentCorrection, currentCorrection).let {
                 bestCorrection = it
                 curMaxRestarts = it.nodeList!!.tail.size
@@ -93,14 +90,14 @@ class QueryMapper(string: String, language: String, tries: Tries) {
     }
 
     /**
-     * returns the best correction out of two corrections. The criteria for choosing
+     * Returns the best correction out of two corrections. The criteria for choosing
      * the best correction are:
      * 1. number of restarts from the trie root (less is better)
      * 2. The number of words corrected (more is better)
      * 3. The correction itself with its sort order
      */
 
-    private fun bestCorrectionOf(correction1: Correction, correction2: Correction) : Correction {
+    private fun bestCorrectionOf(correction1: Correction, correction2: Correction): Correction {
         if (correction1.nodeList!!.tail.size < correction2.nodeList!!.tail.size) return correction1
         if (correction1.nodeList.tail.size > correction2.nodeList.tail.size) return correction2
 

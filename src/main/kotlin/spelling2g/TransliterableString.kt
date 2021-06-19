@@ -5,6 +5,6 @@ data class TransliterableString(val string: String) {
     val wordCount: Int by lazy { 1 + string.count { it == ' ' } }
 }
 
-fun String.toTransliterableString() : TransliterableString {
+fun String.toTransliterableString(): TransliterableString {
     return TransliterableString(this)
 }

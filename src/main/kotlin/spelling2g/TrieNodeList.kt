@@ -11,8 +11,8 @@ class TrieNodeList(head: TrieNode, tail: List<TrieNode> = listOf<TrieNode>()) {
     val head = head
     val tail = tail
 
-    fun getPhrase() : String {
-        var res = ArrayList<String>(tail.size + 1)
+    fun getPhrase(): String {
+        val res = ArrayList<String>(tail.size + 1)
 
         tail.forEach { res.add(it.getPhrase()) }
         res.add(head.getPhrase())
