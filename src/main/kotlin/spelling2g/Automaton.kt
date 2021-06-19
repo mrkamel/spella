@@ -33,7 +33,7 @@ class Automaton(string: String, maxEdits: Int) {
                     value = nodeList.getPhrase().toTransliterableString(),
                     original = transliterableString,
                     distance = distance,
-                    score = if (nodes.size > 0) 0.0 else node.score,
+                    score = node.score + nodes.sumOf { it.score },
                     nodeList = nodeList,
                 )
             )

@@ -29,10 +29,10 @@ class Correction(
 
 	override operator fun compareTo(other: Correction): Int {
 		if (distance < other.distance) return -1
-		if (distance > other.distance) return 1
+    if (distance > other.distance) return 1
 
-        if (matchesTransliterated && !other.matchesTransliterated) return -1
-        if (!matchesTransliterated && other.matchesTransliterated) return 1
+    if (matchesTransliterated && !other.matchesTransliterated) return -1
+    if (!matchesTransliterated && other.matchesTransliterated) return 1
 
 		if (score > other.score) return -1
 		if (score < other.score) return 1

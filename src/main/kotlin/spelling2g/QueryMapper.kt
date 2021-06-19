@@ -1,5 +1,7 @@
 package spelling2g
 
+import kotlin.comparisons.compareBy
+
 /**
  * The QueryMapper takes an input string, splits it by whitespace and greedily
  * searches for the longest correction. Uses intermediary nodes, i.e. the
@@ -21,40 +23,12 @@ class QueryMapper(string: String, language: String, tries: Tries) {
         var i = 0
 
         while (i < words.size) {
-            var longestCorrection : Correction? = null
-            var len = 1
             var max = Math.min(maxLookahead, words.size - i)
+            val correction = correct(words, i, i + max - 1, TrieNodeList(trie))
 
-            for (u in 1..max) {
-                val correction = correct(words, i, i + u -1, TrieNodeList(trie)).minOrNull() ?: break
+            corrections.add(correction)
 
-                // If the current correction has zero distance and the longer one distance > 0,
-                // stick with the shorter one unless the shorter one is prefix of the longer one.
-
-                if (longestCorrection == null || correction.distance == 0) {
-                    longestCorrection = correction
-                    len = u
-                } else if (longestCorrection.distance == 0) {
-                    if (correction.value.string.startsWith(longestCorrection.value.string)) {
-                        longestCorrection = correction
-                        len = u
-                    }
-                } else {
-                    longestCorrection = correction
-                    len = u
-                }
-            }
-
-            corrections.add(
-                longestCorrection ?: Correction(
-                    value    = words[i].toTransliterableString(),
-                    original = words[i].toTransliterableString(),
-                    distance = 0,
-                    score    = 0.0,
-                )
-            )
-
-            i += len
+            i += correction.original.wordCount
         }
 
         return Correction(
@@ -66,37 +40,73 @@ class QueryMapper(string: String, language: String, tries: Tries) {
     }
 
     /**
-     * Recursively correct the list of words to guarantee, that every single word
-     * has the specified max edit distance at most. Otherwise we'd need to increase
-     * the max edit distance the longer the string we try to correct, which is
-     * not optimal performance wise and we wouldn't be able to guarantee a max
-     * edit distance per word.
+     * Find the best correction for a number of words. Candidates are sorted by
+     * 1. number of restarts from the trie root (less is better)
+     * 2. The number of words corrected (more is better)
+     * 3. The correction itself with its sort order
+     * In case no correction can be found, the first word is used and returned as
+     * correction.
      */
 
-    private fun correct(words: List<String>, firstIndex: Int, lastIndex: Int, nodeList: TrieNodeList) : List<Correction> {
-        var word = words[firstIndex]
-        var maxEdits = if (word.length <= 3) 0 else 1
+    private fun correct(
+        words: List<String>,
+        firstIndex: Int,
+        lastIndex: Int,
+        nodeList: TrieNodeList,
+    ) : Correction {
+        val correction = correctAll(words, firstIndex, lastIndex, nodeList)
+            .minWithOrNull(compareBy({ it.nodeList!!.tail.size }, { -it.original.wordCount }, { it }))
 
-        return Automaton(string = word, maxEdits = maxEdits).correct(nodeList).flatMap { correction ->
+        return correction ?: Correction(
+            words[firstIndex].toTransliterableString(),
+            words[firstIndex].toTransliterableString(),
+            distance = 0,
+            score = 0.0,
+        )
+    }
+
+    /**
+     * Returns the longest available corrections that match the edit distance criteria by
+     * recursively and greedily correcting the list of words up until a word can not be
+     * corrected anymore. This guarantees that every single word has the specified max
+     * edit distance at most. Otherwise we'd need to increase the max edit distance the
+     * longer the string we try to correct, which is not optimal performance wise and we
+     * wouldn't be able to guarantee a max edit distance per word.
+     */
+
+     private fun correctAll(
+        words: List<String>,
+        firstIndex: Int,
+        lastIndex: Int,
+        nodeList: TrieNodeList,
+        phrase: Boolean = false,
+     ) : List<Correction> {
+         val word = words[firstIndex]
+         val maxEdits = if (word.length <= 3) 0 else 1
+         val string = if (phrase) " $word" else word
+
+         return Automaton(string = string, maxEdits = maxEdits).correct(nodeList).flatMap { correction ->
             if (firstIndex == lastIndex) return@flatMap listOf(correction)
 
-            var res = ArrayList<Correction>()
+            val res = arrayListOf(correction)
 
-            // continue with next word
-
-            correction.nodeList?.head?.children?.get(' ')?.let {
-                res.addAll(correct(words, firstIndex + 1, lastIndex, TrieNodeList(it, correction.nodeList.tail)).map { cur ->
-                    Correction(cur.value, cur.original, cur.distance + correction.distance, cur.score, cur.nodeList)
-                })
-            }
-
-            // allow to combine words from the query
-
-            res.addAll(correct(words, firstIndex + 1, lastIndex, correction.nodeList!!).map { cur ->
-                Correction(cur.value, cur.original, cur.distance + correction.distance + 1, cur.score, cur.nodeList)
+            res.addAll(correctAll(words, firstIndex + 1, lastIndex, correction.nodeList!!, true).map { cur ->
+                Correction(
+                    cur.value,
+                    "${correction.original.string}${cur.original.string}".toTransliterableString(),
+                    cur.distance + correction.distance,
+                    cur.score,
+                    cur.nodeList,
+                )
             })
 
             res
         }
     }
+
+    /**
+     * Optimization
+     * 1. Migrate correctAll to iterative instead of recursive
+     * 2. Keep the currency best correction continously check if a candidate can keep up with the current maximum
+     */
 }
