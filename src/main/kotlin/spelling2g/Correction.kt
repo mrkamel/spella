@@ -19,6 +19,7 @@ class Correction(
     val score = score
     val nodeList = nodeList
     val matchesTransliterated: Boolean by lazy { value.transliteratedString == original.transliteratedString }
+    val numRestarts: Int by lazy { if(nodeList == null) 0 else nodeList.tail.size }
 
     /**
      * A correction is better/smaller when

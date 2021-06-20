@@ -66,8 +66,8 @@ class QueryMapper(string: String, language: String, tries: Tries) {
         Automaton(string = string, maxEdits = maxEdits).correct(nodeList).forEach { correction ->
             var currentCorrection = correction
 
-            if (firstIndex < lastIndex && correction.nodeList!!.tail.size <= curMaxRestarts) {
-                correct(words, firstIndex + 1, lastIndex, correction.nodeList, true, curMaxRestarts)?.let { cur ->
+            if (firstIndex < lastIndex && correction.numRestarts <= curMaxRestarts) {
+                correct(words, firstIndex + 1, lastIndex, correction.nodeList!!, true, curMaxRestarts)?.let { cur ->
                     val longerCorrection = Correction(
                         value = cur.value,
                         original = "${correction.original.string}${cur.original.string}".toTransliterableString(),
@@ -82,7 +82,7 @@ class QueryMapper(string: String, language: String, tries: Tries) {
 
             bestCorrectionOf(bestCorrection ?: currentCorrection, currentCorrection).let {
                 bestCorrection = it
-                curMaxRestarts = it.nodeList!!.tail.size
+                curMaxRestarts = it.numRestarts
             }
         }
 
@@ -98,8 +98,8 @@ class QueryMapper(string: String, language: String, tries: Tries) {
      */
 
     private fun bestCorrectionOf(correction1: Correction, correction2: Correction): Correction {
-        if (correction1.nodeList!!.tail.size < correction2.nodeList!!.tail.size) return correction1
-        if (correction1.nodeList.tail.size > correction2.nodeList.tail.size) return correction2
+        if (correction1.numRestarts < correction2.numRestarts) return correction1
+        if (correction1.numRestarts > correction2.numRestarts) return correction2
 
         if (correction1.original.wordCount > correction2.original.wordCount) return correction1
         if (correction1.original.wordCount < correction2.original.wordCount) return correction2
