@@ -14,7 +14,12 @@ class QueryMapper(string: String, language: String, tries: Tries) {
     val trie = tries[language]
 
     fun map(maxLookahead: Int = 5): Correction? {
-        if (trie == null) return null
+        if (trie == null) return Correction(
+            value = string.toTransliterableString(),
+            original = string.toTransliterableString(),
+            distance = 0,
+            score = 0.0,
+        )
 
         val words = string.split(" ").filter { it.length > 0 }
         val corrections = ArrayList<Correction>()
@@ -23,7 +28,12 @@ class QueryMapper(string: String, language: String, tries: Tries) {
         while (i < words.size) {
             val max = Math.min(maxLookahead, words.size - i)
             val correction = correct(words, i, i + max - 1, TrieNodeList(trie))
-                ?: Correction(words[i].toTransliterableString(), words[i].toTransliterableString(), distance = 0, score = 0.0)
+                ?: Correction(
+                    words[i].toTransliterableString(),
+                    words[i].toTransliterableString(),
+                    distance = 0,
+                    score = 0.0,
+                )
 
             corrections.add(correction)
 
@@ -34,7 +44,7 @@ class QueryMapper(string: String, language: String, tries: Tries) {
             value = corrections.map { it.value.string }.joinToString(", ").toTransliterableString(),
             original = string.toTransliterableString(),
             distance = corrections.sumOf { it.distance },
-            score = corrections.sumOf { it.score },
+            score = corrections.sumOf { it.score }
         )
     }
 
@@ -74,15 +84,18 @@ class QueryMapper(string: String, language: String, tries: Tries) {
                         distance = cur.distance + correction.distance,
                         score = cur.score,
                         nodeList = cur.nodeList,
+                        isTerminal = cur.isTerminal,
                     )
 
                     currentCorrection = bestCorrectionOf(currentCorrection, longerCorrection)
                 }
             }
 
-            bestCorrectionOf(bestCorrection ?: currentCorrection, currentCorrection).let {
-                bestCorrection = it
-                curMaxRestarts = it.numRestarts
+            if (currentCorrection.isTerminal) {
+                bestCorrectionOf(bestCorrection ?: currentCorrection, currentCorrection).let {
+                    bestCorrection = it
+                    curMaxRestarts = it.numRestarts
+                }
             }
         }
 

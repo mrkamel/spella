@@ -14,3 +14,7 @@ jobs:
           wrapper-cache-enabled: true
           dependencies-cache-enabled: true
           configuration-cache-enabled: true
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+       - uses: vroy/gha-kotlin-linter@v1

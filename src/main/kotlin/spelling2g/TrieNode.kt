@@ -9,7 +9,7 @@ package spelling2g
 class TrieNode(parent: TrieNode? = null, char: Char? = null) {
     val parent = parent
     val char = char
-    var isWordEnd = false
+    var isTerminal = false
     var score = 0.0
     val children = HashMap<Char, TrieNode>()
 
@@ -22,7 +22,7 @@ class TrieNode(parent: TrieNode? = null, char: Char? = null) {
             node = node.children.getOrPut(char) { TrieNode(parent = node, char = char) }
 
             if (phrase.length <= index + 1 || phrase[index + 1] == ' ') {
-                node.isWordEnd = true
+                node.isTerminal = true
             }
         }
 

@@ -4,8 +4,8 @@
  * This generated file contains a sample Kotlin application project to get you started.
  */
 
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
@@ -32,15 +32,15 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 
     // Use the Kotlin test library.
-    //testImplementation("org.jetbrains.kotlin:kotlin-test")
+    // testImplementation("org.jetbrains.kotlin:kotlin-test")
 
     testImplementation("io.kotest:kotest-runner-junit5:4.6.0")
     testImplementation("io.kotest:kotest-assertions-core:4.6.0")
 
     testImplementation("io.mockk:mockk:1.11.0")
 
-    //testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.1")
-    //testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.1")
+    // testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.1")
+    // testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.1")
 
     implementation("io.javalin:javalin:3.13.7")
     implementation("org.slf4j:slf4j-simple:1.8.0-beta4")
@@ -61,7 +61,7 @@ tasks.withType<Test> {
 
     testLogging {
         exceptionFormat = TestExceptionFormat.FULL
-        events = mutableSetOf(TestLogEvent.FAILED, TestLogEvent.PASSED, TestLogEvent.SKIPPED)
+        events = mutableSetOf(TestLogEvent.FAILED, TestLogEvent.SKIPPED)
 
         showExceptions = true
         showCauses = true

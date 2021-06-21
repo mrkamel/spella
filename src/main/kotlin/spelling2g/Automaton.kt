@@ -12,22 +12,22 @@ class Automaton(string: String, maxEdits: Int) {
 
     /**
      * Returns all available corrections which have distance <= maxEdits.
-     * Matches are determined by whether or not the respective trie node is
-     * a word end. That means partial matches delimited by whitespace are
-     * also considered as matches.
+     * Partial matches are also considered as matches which is reflected
+     * by the isTerminal property of the returned corrections. Partial
+     * matches delimited by whitespace are treated as regular matches.
      */
 
     fun correct(nodeList: TrieNodeList): List<Correction> {
         return correctRecursive(nodeList, start())
     }
 
-    public fun correctRecursive(nodeList: TrieNodeList, state: State): List<Correction> {
+    private fun correctRecursive(nodeList: TrieNodeList, state: State): List<Correction> {
         val node = nodeList.head
         val nodes = nodeList.tail
         var res = ArrayList<Correction>()
         val distance = state.values.last()
 
-        if (node.isWordEnd && isMatch(state)) {
+        if (isMatch(state)) {
             res.add(
                 Correction(
                     value = nodeList.getPhrase().toTransliterableString(),
@@ -35,6 +35,7 @@ class Automaton(string: String, maxEdits: Int) {
                     distance = distance,
                     score = node.score + nodes.sumOf { it.score },
                     nodeList = nodeList,
+                    isTerminal = node.isTerminal,
                 )
             )
         }
@@ -50,7 +51,7 @@ class Automaton(string: String, maxEdits: Int) {
         // Additionally try to split the current word and continue correcting
         // from the root node.
 
-        if (node.isWordEnd) {
+        if (node.isTerminal) {
             var newState = step(state, ' ', node.char)
 
             if (canMatch(newState)) {
