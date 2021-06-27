@@ -23,12 +23,8 @@ class AutomatonTest : DescribeSpec({
             )
 
             corrections.filter { !it.isTerminal }.map { listOf(it.value.string, it.distance, it.score) }.shouldContainExactly(
-                listOf("some phrase ", 1, 1.0),
                 listOf("same phrase", 1, 0.0),
                 listOf("some phras", 1, 0.0),
-                listOf("some phrases ", 2, 2.0),
-                listOf("some phrase s", 2, 1.0),
-                listOf("some phrase o", 2, 1.0),
                 listOf("same phras", 2, 0.0),
                 listOf("some phra", 2, 0.0),
             )
@@ -69,29 +65,6 @@ class AutomatonTest : DescribeSpec({
             corrections.filter { it.isTerminal }.map { listOf(it.value.string, it.distance, it.score) }.shouldContainExactly(
                 listOf("preprocess", 0, 1.0),
                 listOf("preprocessor", 2, 3.0),
-            )
-        }
-
-        it("restarts from the root when neccessary and adds the previous node to the tail") {
-            val trieNode = TrieNode().also {
-                it.insert("write", 1.0)
-                it.insert("another", 2.0)
-                it.insert("phrase", 3.0)
-                it.insert("phase", 4.0)
-                it.insert("root", 5.0)
-            }
-
-            val trieNodeList = TrieNodeList(trieNode, listOf(trieNode.lookup("root")!!))
-            val corrections = Automaton("writ anoter phrse", maxEdits = 3).correct(trieNodeList).filter { it.isTerminal }.sorted()
-
-            corrections.map { it.value.string }.shouldContainExactly(
-                "root write another phase",
-                "root write another phrase",
-            )
-
-            corrections.map { it.nodeList!!.tail.map { it.getPhrase() } + listOf(it.nodeList!!.head.getPhrase()) }.shouldContainExactly(
-                listOf("root", "write", "another", "phase"),
-                listOf("root", "write", "another", "phrase"),
             )
         }
 

@@ -17,49 +17,32 @@ class Automaton(string: String, maxEdits: Int) {
      * matches delimited by whitespace are treated as regular matches.
      */
 
-    fun correct(nodeList: TrieNodeList): List<Correction> {
-        return correctRecursive(nodeList, start())
-    }
-
     fun correct(trieNode: TrieNode): List<Correction> {
-        return correct(TrieNodeList(trieNode))
+        return correctRecursive(trieNode, start())
     }
 
-    private fun correctRecursive(nodeList: TrieNodeList, state: State): List<Correction> {
-        val node = nodeList.head
-        val nodes = nodeList.tail
+    private fun correctRecursive(trieNode: TrieNode, state: State): List<Correction> {
         var res = ArrayList<Correction>()
         val distance = state.values.last()
 
         if (isMatch(state)) {
             res.add(
                 Correction(
-                    value = nodeList.getPhrase().toTransliterableString(),
+                    value = trieNode.getPhrase().toTransliterableString(),
                     original = transliterableString,
                     distance = distance,
-                    score = node.score + nodes.sumOf { it.score },
-                    nodeList = nodeList,
-                    isTerminal = node.isTerminal,
+                    score = trieNode.score,
+                    isTerminal = trieNode.isTerminal,
+                    trieNode = trieNode,
                 )
             )
         }
 
-        for ((char, newNode) in node.children) {
-            var newState = step(state, char, node.char)
+        for ((char, newTrieNode) in trieNode.children) {
+            var newState = step(state, char, trieNode.char)
 
             if (canMatch(newState)) {
-                res.addAll(correctRecursive(TrieNodeList(newNode, nodes), newState))
-            }
-        }
-
-        // Additionally try to split the current word and continue correcting
-        // from the root node.
-
-        if (node.isTerminal) {
-            var newState = step(state, ' ', node.char)
-
-            if (canMatch(newState)) {
-                res.addAll(correctRecursive(TrieNodeList(node.root(), nodes + listOf(node)), newState))
+                res.addAll(correctRecursive(newTrieNode, newState))
             }
         }
 

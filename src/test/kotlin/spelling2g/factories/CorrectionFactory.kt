@@ -7,8 +7,8 @@ object CorrectionFactory {
         distance: Int = 1,
         score: Double = 1.0,
         isTerminal: Boolean = true,
-        nodeList: TrieNodeList? = null,
+        trieNode: TrieNode? = null,
     ): Correction {
-        return Correction(value, original, distance, score, isTerminal, nodeList)
+        return Correction(value, original, distance, score, isTerminal, trieNode)
     }
 }
