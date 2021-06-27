@@ -18,17 +18,17 @@ class TrieNodeTest : DescribeSpec({
             val trieNode = TrieNode()
             trieNode.insert("", 1.0)
 
-            trieNode.isWordEnd.shouldBe(false)
+            trieNode.isTerminal.shouldBe(false)
             trieNode.parent.shouldBeNull()
         }
 
-        it("sets isWordEnd to true for whitespaces and the last node") {
+        it("sets isTerminal to true for whitespaces and the last node") {
             val trieNode = TrieNode()
             trieNode.insert("some phrase", 1.0)
 
-            trieNode.lookup("some")!!.isWordEnd.shouldBe(true)
-            trieNode.lookup("some phrase")!!.isWordEnd.shouldBe(true)
-            trieNode.lookup("som")!!.isWordEnd.shouldBe(false)
+            trieNode.lookup("some")!!.isTerminal.shouldBe(true)
+            trieNode.lookup("some phrase")!!.isTerminal.shouldBe(true)
+            trieNode.lookup("som")!!.isTerminal.shouldBe(false)
         }
 
         it("sets the score for the last node") {

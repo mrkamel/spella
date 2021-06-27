@@ -14,9 +14,13 @@ class Tries {
         readFile(path) { lines ->
             lines.map { line -> line.split("\t") }
                 .forEach { (language, phrase, score) ->
-                    tries.getOrPut(language) { TrieNode() }.insert(phrase.lowercase(), score.toDouble())
+                    insert(language, phrase.lowercase(), score.toDouble())
                 }
         }
+    }
+
+    fun insert(language: String, phrase: String, score: Double) {
+        tries.getOrPut(language) { TrieNode() }.insert(phrase.lowercase(), score.toDouble())
     }
 
     operator fun get(language: String): TrieNode? {
