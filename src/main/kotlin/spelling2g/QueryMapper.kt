@@ -13,7 +13,7 @@ class QueryMapper(string: String, language: String, tries: Tries) {
     val tries = tries
     val trie = tries[language]
 
-    fun map(maxLookahead: Int = 5): Correction? {
+    fun map(maxLookahead: Int = 5): Correction {
         if (trie == null) return Correction(
             value = string.toTransliterableString(),
             original = string.toTransliterableString(),

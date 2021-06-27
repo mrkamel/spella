@@ -21,6 +21,10 @@ class Automaton(string: String, maxEdits: Int) {
         return correctRecursive(nodeList, start())
     }
 
+    fun correct(trieNode: TrieNode): List<Correction> {
+        return correct(TrieNodeList(trieNode))
+    }
+
     private fun correctRecursive(nodeList: TrieNodeList, state: State): List<Correction> {
         val node = nodeList.head
         val nodes = nodeList.tail

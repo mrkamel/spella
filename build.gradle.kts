@@ -33,10 +33,14 @@ dependencies {
 
     testImplementation("io.kotest:kotest-runner-junit5:4.6.0")
     testImplementation("io.kotest:kotest-assertions-core:4.6.0")
-
+    testImplementation("io.ktor:ktor-server-test-host:1.6.0")
     testImplementation("io.mockk:mockk:1.11.0")
+    testImplementation("com.google.code.gson:gson:1.11.0")
 
-    implementation("io.javalin:javalin:3.13.7")
+    implementation("io.ktor:ktor-server-core:1.6.0")
+    implementation("io.ktor:ktor-server-netty:1.6.0")
+    implementation("io.ktor:ktor-gson:1.6.0")
+    implementation("ch.qos.logback:logback-classic:1.2.3")
     implementation("org.slf4j:slf4j-simple:1.8.0-beta4")
 }
 
