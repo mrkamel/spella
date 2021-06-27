@@ -105,6 +105,22 @@ class QueryMapperTest : DescribeSpec({
             QueryMapper("skys craper", "en", tries).map().value.string.shouldBe("skyscraper")
         }
 
+        it("uses partial matches") {
+            val tries = Tries().also {
+                it.insert("en", "beach bar", 1.0)
+            }
+
+            QueryMapper("bech", "en", tries).map().value.string.shouldBe("beach")
+        }
+
+        it("does not use non-terminal partial matches") {
+            val tries = Tries().also {
+                it.insert("en", "beachbar", 1.0)
+            }
+
+            QueryMapper("bech", "en", tries).map().value.string.shouldBe("bech")
+        }
+
         it("applies a max distance per word") {
             val tries = Tries().also {
                 it.insert("en", "skyscraper", 1.0)
