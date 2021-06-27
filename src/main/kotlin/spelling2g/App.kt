@@ -1,5 +1,11 @@
 package spelling2g
 
+import io.ktor.application.install
+import io.ktor.features.CallLogging
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
+import org.slf4j.event.Level
+
 fun main(args: Array<String>) {
     val tries = Tries()
 
@@ -7,21 +13,20 @@ fun main(args: Array<String>) {
         tries.addFile(it)
     }
 
-    while (true) {
-        print("> ")
-        var input = readLine()!!.trim().lowercase()
+    embeddedServer(Netty, port = 8888, host = "0.0.0.0") {
+        install(CallLogging) {
+            level = Level.INFO
 
-        var t1 = System.currentTimeMillis()
+            format { call ->
+                val method = call.request.local.method.value
+                val uri = call.request.local.uri
+                val status = call.response.status()
+                val timingHeader = call.response.headers["X-Timing"]
 
-        var queryMapper = QueryMapper(input, language = "de", tries = tries)
-        var correction = queryMapper.map(maxLookahead = 5)
-        println("${correction?.value?.string}, distance: ${correction?.distance}, score: ${correction?.score}")
+                "$method $uri - $status - $timingHeader"
+            }
+        }
 
-        println(System.currentTimeMillis() - t1)
-    }
-
-    /*
-        val app = Javalin.create().start(7000)
-        app.get("/") { ctx -> ctx.result("Hello World") }
-    */
+        registerCorrectionsController(tries)
+    }.start(wait = true)
 }

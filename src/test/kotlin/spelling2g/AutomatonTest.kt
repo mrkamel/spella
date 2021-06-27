@@ -14,7 +14,7 @@ class AutomatonTest : DescribeSpec({
                 it.insert("other", 4.0)
             }
 
-            val corrections = Automaton("some phrase", maxEdits = 2).correct(TrieNodeList(trieNode)).sorted()
+            val corrections = Automaton("some phrase", maxEdits = 2).correct(trieNode).sorted()
 
             corrections.filter { it.isTerminal }.map { listOf(it.value.string, it.distance, it.score) }.shouldContainExactly(
                 listOf("some phrase", 0, 1.0),
@@ -45,7 +45,7 @@ class AutomatonTest : DescribeSpec({
                 it.insert("other", 5.0)
             }
 
-            val corrections = Automaton("process", maxEdits = 1).correct(TrieNodeList(trieNode)).sorted()
+            val corrections = Automaton("process", maxEdits = 1).correct(trieNode).sorted()
 
             corrections.map { listOf(it.value.string, it.distance, it.score) }.shouldContainExactly(
                 listOf("process", 0, 0.0),
@@ -64,7 +64,7 @@ class AutomatonTest : DescribeSpec({
                 it.insert("other", 5.0)
             }
 
-            val corrections = Automaton("process", maxEdits = 2).correct(TrieNodeList(trieNode.lookup("pre")!!)).sorted()
+            val corrections = Automaton("process", maxEdits = 2).correct(trieNode.lookup("pre")!!).sorted()
 
             corrections.filter { it.isTerminal }.map { listOf(it.value.string, it.distance, it.score) }.shouldContainExactly(
                 listOf("preprocess", 0, 1.0),
@@ -78,50 +78,47 @@ class AutomatonTest : DescribeSpec({
                 it.insert("another", 2.0)
                 it.insert("phrase", 3.0)
                 it.insert("phase", 4.0)
+                it.insert("root", 5.0)
             }
 
-            val corrections = Automaton("writ anoter phrse", maxEdits = 3)
-                .correct(TrieNodeList(trieNode)).filter { it.isTerminal }.sorted()
+            val trieNodeList = TrieNodeList(trieNode, listOf(trieNode.lookup("root")!!))
+            val corrections = Automaton("writ anoter phrse", maxEdits = 3).correct(trieNodeList).filter { it.isTerminal }.sorted()
 
             corrections.map { it.value.string }.shouldContainExactly(
-                "write another phase",
-                "write another phrase",
+                "root write another phase",
+                "root write another phrase",
             )
 
             corrections.map { it.nodeList!!.tail.map { it.getPhrase() } + listOf(it.nodeList!!.head.getPhrase()) }.shouldContainExactly(
-                listOf("write", "another", "phase"),
-                listOf("write", "another", "phrase"),
+                listOf("root", "write", "another", "phase"),
+                listOf("root", "write", "another", "phrase"),
             )
         }
 
         it("adds distance one for deletions") {
             val trieNode = TrieNode().also { it.insert("keyword", 1.0) }
-            val correction = Automaton("keyyword", maxEdits = 1)
-                .correct(TrieNodeList(trieNode)).map { listOf(it.value.string, it.distance) }.first()
+            val correction = Automaton("keyyword", maxEdits = 1).correct(trieNode).map { listOf(it.value.string, it.distance) }.first()
 
             correction.shouldBe(listOf("keyword", 1))
         }
 
         it("adds distance one for insertions") {
             val trieNode = TrieNode().also { it.insert("keyword", 1.0) }
-            val correction = Automaton("keword", maxEdits = 1)
-                .correct(TrieNodeList(trieNode)).map { listOf(it.value.string, it.distance) }.first()
+            val correction = Automaton("keword", maxEdits = 1).correct(trieNode).map { listOf(it.value.string, it.distance) }.first()
 
             correction.shouldBe(listOf("keyword", 1))
         }
 
         it("adds distance one for transpositions") {
             val trieNode = TrieNode().also { it.insert("keyword", 1.0) }
-            val correction = Automaton("kewyord", maxEdits = 1)
-                .correct(TrieNodeList(trieNode)).map { listOf(it.value.string, it.distance) }.first()
+            val correction = Automaton("kewyord", maxEdits = 1).correct(trieNode).map { listOf(it.value.string, it.distance) }.first()
 
             correction.shouldBe(listOf("keyword", 1))
         }
 
         it("adds distance one for transliterations") {
             val trieNode = TrieNode().also { it.insert("keywörd", 1.0) }
-            val correction = Automaton("keywoerd", maxEdits = 1)
-                .correct(TrieNodeList(trieNode)).map { listOf(it.value.string, it.distance) }.first()
+            val correction = Automaton("keywoerd", maxEdits = 1).correct(trieNode).map { listOf(it.value.string, it.distance) }.first()
 
             correction.shouldBe(listOf("keywörd", 1))
         }

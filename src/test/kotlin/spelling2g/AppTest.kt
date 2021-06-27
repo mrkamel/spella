@@ -1,1 +1,0 @@
-package spelling2g
