@@ -11,11 +11,10 @@ class Tries {
     val tries = HashMap<String, TrieNode>()
 
     fun addFile(path: String) {
-        readFile(path) { lines ->
-            lines.map { line -> line.split("\t") }
-                .forEach { (language, phrase, score) ->
-                    insert(language, phrase.lowercase(), score.toDouble())
-                }
+        readFile(path) { line ->
+            var row = line.split("\t")
+
+            insert(row[0], row[1].lowercase(), row[2].toDouble())
         }
     }
 
@@ -27,7 +26,7 @@ class Tries {
         return tries[language]
     }
 
-    private fun readFile(path: String, block: (Sequence<String>) -> Unit) {
-        File(path).useLines(block = block)
+    private fun readFile(path: String, fn: (String) -> Unit) {
+        File(path).forEachLine { line -> fn(line) }
     }
 }
