@@ -16,12 +16,8 @@ class TriesTest : DescribeSpec({
             every {
                 tries.invoke("readFile").withArguments(listOf("test.dic", any<(Sequence<String>) -> Unit>()))
             } answers {
-                secondArg<(Sequence<String>) -> Unit>().invoke(
-                    sequenceOf(
-                        "en\tsome phrase\t1.0",
-                        "de\tandere phrase\t2.0"
-                    )
-                )
+                secondArg<(String) -> Unit>().invoke("en\tsome phrase\t1.0")
+                secondArg<(String) -> Unit>().invoke("de\tandere phrase\t2.0")
             }
         }
 
