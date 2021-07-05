@@ -65,7 +65,7 @@ class QueryMapper(string: String, language: String, tries: Tries) {
         phrase: Boolean = false,
     ): Correction? {
         val word = words[firstIndex]
-        val maxEdits = if (word.length <= 3) 0 else 1
+        val maxEdits = if (word.length <= 3) 0 else if(word.length <= 8) 1 else 2
         val string = if (phrase) " $word" else word
         var bestCorrection: Correction? = null
 

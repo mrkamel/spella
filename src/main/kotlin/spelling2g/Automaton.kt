@@ -7,7 +7,7 @@ data class State(val indices: List<Int>, val values: List<Int>)
 
 class Automaton(string: String, maxEdits: Int) {
     val string = string
-    var maxEdits = maxEdits
+    val maxEdits = maxEdits
     val transliterableString: TransliterableString by lazy { string.toTransliterableString() }
 
     /**
