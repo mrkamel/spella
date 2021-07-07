@@ -42,6 +42,7 @@ dependencies {
     implementation("io.ktor:ktor-gson:1.6.0")
     implementation("ch.qos.logback:logback-classic:1.2.3")
     implementation("org.slf4j:slf4j-simple:1.8.0-beta4")
+    implementation("com.github.ajalt.clikt:clikt:3.2.0")
 }
 
 application {

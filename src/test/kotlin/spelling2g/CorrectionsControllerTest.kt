@@ -13,7 +13,6 @@ import io.ktor.server.testing.withTestApplication
 
 class CorrectionsControllerTest : DescribeSpec({
     describe("GET /corrections") {
-        it("returns a 422 when the")
         it("returns a CorrectionResponse with a http 200 status code") {
             val tries = Tries().also { it.insert("en", "correction", 1.0) }
             val response = withTestApplication(moduleFunction = { registerCorrectionsController(tries) }) {

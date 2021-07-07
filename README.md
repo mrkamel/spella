@@ -22,6 +22,8 @@ levenshtein automaton and a Trie. Written in kotlin.
 ## Start
 
 ```shell
+./spella --help
+./spella data/*.dic
 java -jar build/libs/spelling2g-all.jar data/*.dic
 ```
 
