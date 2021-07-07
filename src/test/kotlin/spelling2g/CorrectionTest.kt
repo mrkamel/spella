@@ -109,20 +109,4 @@ class CorrectionTest : DescribeSpec({
             correction.matchesTransliterated.shouldBe(false)
         }
     }
-
-    describe("numRestarts") {
-        it("returns the size of the tail of the node list") {
-            val correction = CorrectionFactory.build(
-                nodeList = TrieNodeList(head = TrieNode(), tail = listOf(TrieNode(), TrieNode())),
-            )
-
-            correction.numRestarts.shouldBe(2)
-        }
-
-        it("returns 0 when the node list is null") {
-            val correction = CorrectionFactory.build()
-
-            correction.numRestarts.shouldBe(0)
-        }
-    }
 })

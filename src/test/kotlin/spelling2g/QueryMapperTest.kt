@@ -87,18 +87,6 @@ class QueryMapperTest : DescribeSpec({
             QueryMapper("somephrase", "en", tries).map().value.string.shouldBe("some phrase")
         }
 
-        it("splits words and starts from the root when neccessary") {
-            val tries = Tries().also {
-                it.insert("en", "some", 1.0)
-                it.insert("en", "phrase", 2.0)
-            }
-
-            QueryMapper("somephrase", "en", tries).map().let {
-                it.value.string.shouldBe("some phrase")
-                it.score.shouldBe(3.0)
-            }
-        }
-
         it("joins words when neccessary") {
             val tries = Tries().also { it.insert("en", "skyscraper", 1.0) }
 

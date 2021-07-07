@@ -5,7 +5,7 @@ package spelling2g
  */
 
 object Transliterator {
-    private var mapping = hashMapOf<Char, String>(
+    private val mapping = hashMapOf<Char, String>(
         'Ä' to "Ae",
         'ä' to "ae",
         'Ö' to "Oe",
