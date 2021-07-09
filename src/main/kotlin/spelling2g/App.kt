@@ -11,7 +11,7 @@ import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.gson.gson
 import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
+import io.ktor.server.cio.CIO
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 
@@ -30,7 +30,7 @@ class Spella : CliktCommand(name = "spella", treatUnknownOptionsAsArgs = true) {
             tries.addFile(it)
         }
 
-        embeddedServer(Netty, port = port, host = bind) {
+        embeddedServer(CIO, port = port, host = bind) {
             install(ContentNegotiation) {
                 gson()
             }

@@ -38,7 +38,7 @@ dependencies {
     testImplementation("com.google.code.gson:gson:1.11.0")
 
     implementation("io.ktor:ktor-server-core:1.6.0")
-    implementation("io.ktor:ktor-server-netty:1.6.0")
+    implementation("io.ktor:ktor-server-cio:1.6.0")
     implementation("io.ktor:ktor-gson:1.6.0")
     implementation("ch.qos.logback:logback-classic:1.2.3")
     implementation("org.slf4j:slf4j-simple:1.8.0-beta4")
