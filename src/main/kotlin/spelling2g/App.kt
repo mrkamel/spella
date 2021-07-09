@@ -10,8 +10,8 @@ import io.ktor.application.install
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.gson.gson
-import io.ktor.server.engine.embeddedServer
 import io.ktor.server.cio.CIO
+import io.ktor.server.engine.embeddedServer
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 
