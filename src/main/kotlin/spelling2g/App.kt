@@ -8,6 +8,8 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.int
 import io.ktor.application.install
 import io.ktor.features.CallLogging
+import io.ktor.features.ContentNegotiation
+import io.ktor.gson.gson
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import org.slf4j.LoggerFactory
@@ -29,6 +31,10 @@ class Spella : CliktCommand(name = "spella", treatUnknownOptionsAsArgs = true) {
         }
 
         embeddedServer(Netty, port = port, host = bind) {
+            install(ContentNegotiation) {
+                gson()
+            }
+
             install(CallLogging) {
                 level = Level.INFO
 
