@@ -1,4 +1,4 @@
-package spelling2g
+package spella
 
 import io.javalin.Javalin
 import org.slf4j.Logger

@@ -1,4 +1,4 @@
-package spelling2g
+package spella
 
 /**
  * Implements a trie. The full string is not stored in each trie node to

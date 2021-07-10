@@ -1,4 +1,4 @@
-package spelling2g
+package spella
 
 /**
  * Transliterates a string to its respective ascii version.

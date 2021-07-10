@@ -1,4 +1,4 @@
-package spelling2g
+package spella
 
 /**
  * The QueryMapper takes an input string, splits it by whitespace and greedily

@@ -1,7 +1,7 @@
 // Implements a levenshtein automaton as described in
 // https://julesjacobs.com/2015/06/17/disqus-levenshtein-simple-and-fast.html
 
-package spelling2g
+package spella
 
 data class State(val indices: List<Int>, val values: List<Int>)
 

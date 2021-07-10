@@ -44,12 +44,12 @@ dependencies {
 }
 
 application {
-    mainClass.set("spelling2g.AppKt")
+    mainClass.set("spella.AppKt")
 }
 
 tasks.withType<ShadowJar>() {
     manifest {
-        attributes["Main-Class"] = "spelling2g.AppKt"
+        attributes["Main-Class"] = "spella.AppKt"
     }
 }
 

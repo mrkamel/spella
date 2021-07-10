@@ -1,4 +1,4 @@
-package spelling2g
+package spella
 
 import io.kotest.assertions.asClue
 import io.kotest.core.spec.style.DescribeSpec
