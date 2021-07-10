@@ -22,7 +22,8 @@ levenshtein automaton and a Trie. Written in kotlin.
 ## Start
 
 ```shell
-java -jar build/libs/spelling2g-all.jar data/*.dic
+./spella --help
+./spella data/*.dic
 ```
 
 The `.dic` files are user-supplied tab separated text files:
@@ -72,12 +73,11 @@ The criteria for choosing the best correction are:
 
 Currently, certain defaults apply:
 
-* tokens < 4 characters: won't be corrected
-* tokens >= 4 characters: a maximum edit distance of 1 is used
+* token length < 4 characters: won't be corrected
+* token length >= 4 characters: a maximum edit distance of 1 is used
+* token length >= 9 characters: a maximum edit distance of 2 is used
 
 ## Todo
 
 * normalization/ignoring special characters
 * keeping the case while being case insensitive
-* Find solution for splitting with restart from root while correcting greedily
-* Allow to configure max edit distances

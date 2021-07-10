@@ -1,0 +1,3 @@
+#!/bin/sh
+
+java -Dorg.slf4j.simpleLogger.showThreadName=false -Dorg.slf4j.simpleLogger.showLogName=false -jar build/libs/spelling2g-all.jar $@
