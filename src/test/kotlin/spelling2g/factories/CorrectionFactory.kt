@@ -1,4 +1,4 @@
-package spelling2g
+package spella
 
 object CorrectionFactory {
     fun build(

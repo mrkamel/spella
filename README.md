@@ -1,4 +1,4 @@
-# spelling2g
+# spella
 
 Multi-language, Multi word, utf-8 spelling correction server using a
 levenshtein automaton and a Trie. Written in kotlin.

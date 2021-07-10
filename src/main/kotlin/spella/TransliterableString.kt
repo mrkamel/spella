@@ -1,4 +1,4 @@
-package spelling2g
+package spella
 
 data class TransliterableString(val string: String) {
     val transliteratedString: String by lazy { Transliterator.map(string) }

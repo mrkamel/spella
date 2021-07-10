@@ -1,4 +1,4 @@
-package spelling2g
+package spella
 
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldContainExactly

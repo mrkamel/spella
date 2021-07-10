@@ -1,4 +1,4 @@
-package spelling2g
+package spella
 
 /**
  * The Correction class represents a correction and implements Comparable to
