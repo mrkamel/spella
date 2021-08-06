@@ -23,9 +23,10 @@ class Automaton(string: String, maxEdits: Int) {
 
     private fun correctRecursive(trieNode: TrieNode, state: State): List<Correction> {
         var res = ArrayList<Correction>()
-        val distance = state.values.last()
 
         if (isMatch(state)) {
+            val distance = state.values.last()
+
             res.add(
                 Correction(
                     value = trieNode.getPhrase().toTransliterableString(),
