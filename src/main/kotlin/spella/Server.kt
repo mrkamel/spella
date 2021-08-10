@@ -49,7 +49,7 @@ public class Server(tries: Tries) {
             }
 
             val startTime = System.currentTimeMillis()
-            val correction = QueryMapper(text, language, tries = tries).map(maxLookahead = 5)
+            val correction = QueryMapper(text, language, tries = tries).map()
             val took = System.currentTimeMillis() - startTime
 
             ctx.json(

@@ -1,111 +1,123 @@
 package spella
 
-/**
- * The QueryMapper takes an input string, splits it by whitespace and greedily
- * searches for the longest correction. Uses intermediary nodes as an
- * optimization to avoid correcting the prefix words again when a longer one
- * gets corrected.
- */
+import kotlin.math.min
 
-class QueryMapper(string: String, language: String, tries: Tries) {
+typealias Phrase = ArrayList<String>
+typealias Sentence = ArrayList<Phrase>
+
+data class DistanceAndScore(val distance: Double, val score: Double) : Comparable<DistanceAndScore> {
+    override operator fun compareTo(other: DistanceAndScore): Int {
+        if (distance < other.distance) return -1
+        if (distance > other.distance) return 1
+
+        if (score > other.score) return -1
+        if (score < other.score) return 1
+
+        return 0
+    }
+}
+
+class QueryMapper(string: String, language: String, tries: Tries, lookahead: Int = 3) {
     val string = string
     val language = language
     val tries = tries
-    val trie = tries[language]
+    val lookahead = lookahead
+    private val trie = tries[language]
+    private val words: List<String> by lazy { string.split(" ") }
 
-    fun map(maxLookahead: Int = 5): Correction {
-        if (trie == null) return Correction(
-            value = string.toTransliterableString(),
-            original = string.toTransliterableString(),
-            distance = 0,
-            score = 0.0,
-        )
+    fun map(): Correction {
+        val correctionCache = generateCorrections()
 
-        val words = string.split(" ").filter { it.length > 0 }
-        val corrections = ArrayList<Correction>()
-        var i = 0
+        val sentence = generateSentences().minByOrNull { sentence ->
+            val corrections = sentence.map { phrase -> correctionCache[phrase] ?: fallbackCorrection(phrase) }
 
-        while (i < words.size) {
-            val max = Math.min(maxLookahead, words.size - i)
-            val correction = correct(words, i, i + max - 1, trie)
-                ?: Correction(
-                    words[i].toTransliterableString(),
-                    words[i].toTransliterableString(),
-                    distance = 0,
-                    score = 0.0,
-                )
-
-            corrections.add(correction)
-
-            i += correction.original.wordCount
+            DistanceAndScore(
+                corrections.sumOf { it.distance } * corrections.size.toDouble(),
+                corrections.sumOf { it.score }
+            )
         }
+
+        if (sentence == null) {
+            return Correction(string.toTransliterableString(), string.toTransliterableString(), 0, 0.0, true)
+        }
+
+        val corrections = sentence.map { phrase -> correctionCache[phrase] ?: fallbackCorrection(phrase) }
 
         return Correction(
-            value = corrections.map { it.value.string }.joinToString(", ").toTransliterableString(),
-            original = string.toTransliterableString(),
-            distance = corrections.sumOf { it.distance },
-            score = corrections.sumOf { it.score }
+            corrections.map { it.value.string }.joinToString(", ").toTransliterableString(),
+            string.toTransliterableString(),
+            corrections.sumOf { it.distance },
+            corrections.sumOf { it.score },
+            true
         )
     }
 
-    /**
-     * Returns the best correction that matches the edit distance criteria by recursively
-     * and greedily correcting the list of words up until a word can not be corrected
-     * anymore. This guarantees that every single word has the specified max edit
-     * distance at most. Otherwise we'd need to increase the max edit distance the
-     * longer the string we try to correct, which is not optimal performance wise and we
-     * wouldn't be able to guarantee a max edit distance per word.
-     */
+    private fun generateCorrections(): HashMap<Phrase, Correction> {
+        val cache = HashMap<Phrase, Correction>()
 
-    private fun correct(
-        words: List<String>,
-        firstIndex: Int,
-        lastIndex: Int,
-        trieNode: TrieNode,
-        phrase: Boolean = false,
-    ): Correction? {
-        val word = words[firstIndex]
-        val maxEdits = if (word.length <= 3) 0 else if (word.length <= 8) 1 else 2
-        val string = if (phrase) " $word" else word
-        var bestCorrection: Correction? = null
+        for (firstIndex in 0..(words.size - 1)) {
+            val correction = Correction("".toTransliterableString(), "".toTransliterableString(), 0, 0.0, true, trie!!)
 
-        Automaton(string = string, maxEdits = maxEdits).correct(trieNode).forEach { correction ->
-            var currentCorrection = correction
-
-            if (firstIndex < lastIndex) {
-                correct(words, firstIndex + 1, lastIndex, correction.trieNode!!, true)?.let { cur ->
-                    currentCorrection = Correction(
-                        value = cur.value,
-                        original = "${correction.original.string}${cur.original.string}".toTransliterableString(),
-                        distance = cur.distance + correction.distance,
-                        score = cur.score,
-                        isTerminal = cur.isTerminal,
-                        trieNode = cur.trieNode,
-                    )
-                }
-            }
-
-            if (currentCorrection.isTerminal) {
-                bestCorrection = bestCorrectionOf(bestCorrection ?: currentCorrection, currentCorrection)
-            }
+            generateCorrections(cache, firstIndex, firstIndex, correction)
         }
 
-        return bestCorrection
+        return cache
     }
 
-    /**
-     * Returns the best correction out of two corrections. The criteria for choosing
-     * the best correction are:
-     * 1. The number of words corrected (more is better)
-     * 2. The correction itself with its sort order
-     */
+    private fun generateCorrections(cache: HashMap<Phrase, Correction>, firstIndex: Int, lastIndex: Int, prevCorrection: Correction) {
+        if (lastIndex - firstIndex + 1 > lookahead) return
+        if (lastIndex >= words.size) return
 
-    private fun bestCorrectionOf(correction1: Correction, correction2: Correction): Correction {
-        if (correction1.original.wordCount > correction2.original.wordCount) return correction1
-        if (correction1.original.wordCount < correction2.original.wordCount) return correction2
+        val phrase = Phrase(words.slice(firstIndex..lastIndex))
+        val string = if (firstIndex == lastIndex) phrase.last() else " ${phrase.last()}"
+        val word = words[lastIndex]
+        val maxEdits = if (word.length <= 3) 0 else if (word.length <= 8) 1 else 2
+        val corrections = Automaton(string, maxEdits).correct(prevCorrection.trieNode!!).map { combineCorrections(prevCurrection, it) }
+        var bestCorrection = corrections.filter { it.isTerminal }.minOrNull()
+        val curCorrection = cache[phrase] ?: bestCorrection
 
-        if (correction1 < correction2) return correction1
+        if (bestCorrection != null) {
+            cache[phrase] = if (bestCorrection < curCorrection!!) bestCorrection else curCorrection
+        }
 
-        return correction2
+        for (correction in corrections) {
+            generateCorrections(cache, firstIndex, lastIndex + 1, correction)
+        }
+    }
+
+    private fun generateSentences(firstIndex: Int = 0): List<Sentence> {
+        if (firstIndex >= words.size) return ArrayList<Sentence>().also { it.add(Sentence()) }
+
+        val lastIndex = Math.min(words.size - 1, firstIndex + lookahead - 1)
+
+        return (firstIndex..lastIndex).map { index -> Phrase(words.slice(firstIndex..index)) }.flatMap { phrase ->
+            generateSentences(firstIndex + phrase.size).map { sentence ->
+                Sentence().also {
+                    it.add(phrase)
+                    it.addAll(sentence)
+                }
+            }
+        }
+    }
+
+    private fun fallbackCorrection(phrase: Phrase): Correction {
+        return Correction(
+            value = phrase.joinToString("  ").toTransliterableString(),
+            original = phrase.joinToString(" ").toTransliterableString(),
+            distance = phrase.sumOf { it.length },
+            score = 0.0,
+            isTerminal = true,
+        )
+    }
+
+    private fun combineCorrections(prevCorrection: Correction, curCorrection: Correction): Correction {
+        return Correction(
+            value = curCorrection.value,
+            original = "${prevCorrection.original.string}${curCorrection.original.string}".toTransliterableString(),
+            distance = curCorrection.distance + prevCorrection.distance,
+            score = curCorrection.score,
+            isTerminal = curCorrection.isTerminal,
+            trieNode = curCorrection.trieNode,
+        )
     }
 }
