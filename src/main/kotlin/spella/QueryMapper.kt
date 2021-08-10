@@ -11,7 +11,8 @@ class QueryMapper(string: String, language: String, tries: Tries) {
     val string = string
     val language = language
     val tries = tries
-    val trie = tries[language]
+    private val trie = tries[language]
+    private val wordCorrectionCache = HashMap<String, Correction?>()
 
     fun map(maxLookahead: Int = 5): Correction {
         if (trie == null) return Correction(
@@ -27,7 +28,7 @@ class QueryMapper(string: String, language: String, tries: Tries) {
 
         while (i < words.size) {
             val max = Math.min(maxLookahead, words.size - i)
-            val correction = correct(words, i, i + max - 1, trie)
+            val correction = correctPhrase(words, i, i + max - 1, trie)
                 ?: Correction(
                     words[i].toTransliterableString(),
                     words[i].toTransliterableString(),
@@ -57,7 +58,7 @@ class QueryMapper(string: String, language: String, tries: Tries) {
      * wouldn't be able to guarantee a max edit distance per word.
      */
 
-    private fun correct(
+    private fun correctPhrase(
         words: List<String>,
         firstIndex: Int,
         lastIndex: Int,
@@ -65,15 +66,19 @@ class QueryMapper(string: String, language: String, tries: Tries) {
         phrase: Boolean = false,
     ): Correction? {
         val word = words[firstIndex]
-        val maxEdits = if (word.length <= 3) 0 else if (word.length <= 8) 1 else 2
+        val maxEdits = maxEdits(word)
+        val wordCorrection = correctWord(word, maxEdits)
         val string = if (phrase) " $word" else word
         var bestCorrection: Correction? = null
 
         Automaton(string = string, maxEdits = maxEdits).correct(trieNode).forEach { correction ->
+            // Skip the phrase correction if the word correction distance is better
+            if (wordCorrection != null && correction.distance > wordCorrection.distance) return@forEach
+
             var currentCorrection = correction
 
             if (firstIndex < lastIndex) {
-                correct(words, firstIndex + 1, lastIndex, correction.trieNode!!, true)?.let { cur ->
+                correctPhrase(words, firstIndex + 1, lastIndex, correction.trieNode!!, true)?.let { cur ->
                     currentCorrection = Correction(
                         value = cur.value,
                         original = "${correction.original.string}${cur.original.string}".toTransliterableString(),
@@ -91,6 +96,27 @@ class QueryMapper(string: String, language: String, tries: Tries) {
         }
 
         return bestCorrection
+    }
+
+    /**
+     * Returns the max number of edits for the given word.
+     */
+
+    fun maxEdits(word: String): Int {
+        if (word.length <= 3) return 0
+        if (word.length <= 8) return 1
+
+        return 2
+    }
+
+    /**
+     * Lookup and cache the best correction of a single word.
+     */
+
+    fun correctWord(word: String, maxEdits: Int): Correction? {
+        return wordCorrectionCache.getOrPut(word) {
+            Automaton(string = word, maxEdits = maxEdits).correct(trie!!).minOrNull()
+        }
     }
 
     /**

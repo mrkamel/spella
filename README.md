@@ -1,7 +1,7 @@
 # spella
 
-Multi-language, Multi word, utf-8 spelling correction server using a
-levenshtein automaton and a Trie. Written in kotlin.
+Multi-language, Multi word, utf-8 spelling correction server for e.g. search
+engines using a levenshtein automaton and a Trie. Written in kotlin.
 
 * Is capable of splitting words, joining words, correcting phrases, etc
 * Calculates distances according to damerau-levenshtein and scores multi
