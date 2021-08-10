@@ -14,6 +14,7 @@ class QueryMapperTest : DescribeSpec({
                 it.score.shouldBe(1.0)
             }
         }
+
         it("ignores the tries of other languages") {
             val tries = Tries().also {
                 it.insert("en", "some phrase", 1.0)
@@ -123,24 +124,6 @@ class QueryMapperTest : DescribeSpec({
             }
         }
 
-        it("prefers corrections with less restarts") {
-            val tries = Tries().also {
-                it.insert("en", "some phrase", 1.0)
-                it.insert("en", "some", 2.0)
-                it.insert("en", "phrase", 3.0)
-            }
-
-            QueryMapper("some phrse", "en", tries).map().let {
-                it.value.string.shouldBe("some phrase")
-                it.score.shouldBe(1.0)
-            }
-
-            QueryMapper("phrase some", "en", tries).map().let {
-                it.value.string.shouldBe("phrase, some")
-                it.score.shouldBe(5.0)
-            }
-        }
-
         it("prefers longer/greedy corrections") {
             val tries = Tries().also {
                 it.insert("en", "some long phrase", 1.0)
@@ -156,6 +139,19 @@ class QueryMapperTest : DescribeSpec({
             }
         }
 
+        it("does not prefer longer/greedy corrections when a single word correction has a smaller distance") {
+            val tries = Tries().also {
+                it.insert("en", "some", 1.0)
+                it.insert("en", "long", 2.0)
+                it.insert("en", "phrase", 3.0)
+                it.insert("en", "some long phrases", 4.0)
+            }
+
+            QueryMapper("some long phrase", "en", tries).map().let {
+                it.value.string.shouldBe("some long, phrase")
+            }
+        }
+
         it("prefers corrections with smaller distance") {
             val tries = Tries().also {
                 it.insert("en", "phrase1", 1.0)
@@ -165,7 +161,7 @@ class QueryMapperTest : DescribeSpec({
             QueryMapper("phrase1", "en", tries).map().value.string.shouldBe("phrase1")
         }
 
-        it("prefers corrections match when transliterated") {
+        it("prefers corrections matching when transliterated") {
             val tries = Tries().also {
                 it.insert("de", "schön", 1.0)
                 it.insert("de", "schon", 2.0)
