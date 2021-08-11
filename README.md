@@ -69,12 +69,12 @@ The criteria for choosing the best correction are:
 3. whether or not a correction matches the original when transliterated
 4. the user supplied score (higher is better)
 
-## Split Dictionary Phrases
+## Splitting Dictionary Phrases
 
-It is possible to split all phrases present in the dictionary files to have all
-single words available for corrections as well. You can enable/disable that
-using the `--split/--no-split` command line option. Splitting is enabled by
-default.
+It is possible to split all phrases present in the dictionary files with the
+goal to have all single words available for corrections as well. You can
+enable/disable that using the `--split/--no-split` command line option.
+Splitting is enabled by default.
 
 ## Max Edit Distance
 
