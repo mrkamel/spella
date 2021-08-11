@@ -12,7 +12,7 @@ class ServerTest : DescribeSpec({
     val mapper = jacksonObjectMapper()
 
     fun withServer(tries: Tries, fn: () -> Unit) {
-        val server = Server(tries)
+        val server = Server(tries, allowedDistances = listOf(4, 9))
 
         try {
             server.start()

@@ -7,10 +7,11 @@ package spella
  * gets corrected.
  */
 
-class QueryMapper(string: String, language: String, tries: Tries) {
+class QueryMapper(string: String, language: String, tries: Tries, allowedDistances: List<Int>) {
     val string = string
     val language = language
     val tries = tries
+    val allowedDistances = allowedDistances
     private val trie = tries[language]
     private val wordCorrectionCache = HashMap<String, Correction?>()
 
@@ -103,10 +104,13 @@ class QueryMapper(string: String, language: String, tries: Tries) {
      */
 
     fun maxEdits(word: String): Int {
-        if (word.length <= 3) return 0
-        if (word.length <= 8) return 1
+        allowedDistances.forEachIndexed { index, allowedDistance ->
+            if (word.length < allowedDistance) {
+                return index
+            }
+        }
 
-        return 2
+        return allowedDistances.size + 1
     }
 
     /**

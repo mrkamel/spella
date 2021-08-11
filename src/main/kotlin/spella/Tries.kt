@@ -10,11 +10,21 @@ import java.io.File
 class Tries {
     val tries = HashMap<String, TrieNode>()
 
-    fun addFile(path: String) {
+    fun addFile(path: String, split: Boolean) {
         readFile(path) { line ->
-            var row = line.split("\t")
+            var (language, phrase, score) = line.split("\t")
+            phrase = phrase.lowercase()
 
-            insert(row[0], row[1].lowercase(), row[2].toDouble())
+            insert(language, phrase, score.toDouble())
+
+            val words = phrase.split(" ")
+
+            if (!split) return@readFile
+            if (words.size == 1) return@readFile
+
+            for (word in words) {
+                insert(language, word.lowercase(), 0.0)
+            }
         }
     }
 
