@@ -78,15 +78,14 @@ Splitting is enabled by default.
 
 ## Max Edit Distance
 
-Currently, the defaults max allowed edit distances are:
+Currently, the default max allowed edit distances are:
 
 * token length < 4 characters: won't be corrected
 * token length < 9 characters: a maximum edit distance of 1 is used
 * else: a maximum edit distance of 2 is used
 
-But you can change those using the `--distances` command line option
-and pass a comma separated list of string lenghts. For instance,
-`--distance 3,6,9` means
+You can change those using the `--distances` command line option and pass a
+comma separated list of string lenghts. For instance, `--distance 3,6,9` means
 
 * token length < 3 characters: won't be corrected
 * token length < 6 characters: a maximum edit distance of 1 is used
