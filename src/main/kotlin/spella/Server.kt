@@ -15,8 +15,9 @@ data class ErrorResponse(
     val message: String,
 )
 
-public class Server(tries: Tries) {
-    val tries: Tries = tries
+public class Server(tries: Tries, allowedDistances: List<Int>) {
+    val tries = tries
+    val allowedDistances = allowedDistances
     val logger: Logger
     val app: Javalin
 
@@ -49,7 +50,7 @@ public class Server(tries: Tries) {
             }
 
             val startTime = System.currentTimeMillis()
-            val correction = QueryMapper(text, language, tries = tries).map(maxLookahead = 5)
+            val correction = QueryMapper(text, language, tries, allowedDistances).map(maxLookahead = 5)
             val took = System.currentTimeMillis() - startTime
 
             ctx.json(

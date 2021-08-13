@@ -69,13 +69,31 @@ The criteria for choosing the best correction are:
 3. whether or not a correction matches the original when transliterated
 4. the user supplied score (higher is better)
 
+## Splitting Dictionary Phrases
+
+It is possible to split all phrases present in the dictionary files with the
+goal to have all single words available for corrections as well. You can
+enable/disable that using the `--split/--no-split` command line option.
+Splitting is enabled by default.
+
 ## Max Edit Distance
 
-Currently, certain defaults apply:
+Currently, the default max allowed edit distances are:
 
 * token length < 4 characters: won't be corrected
-* token length >= 4 characters: a maximum edit distance of 1 is used
-* token length >= 9 characters: a maximum edit distance of 2 is used
+* token length < 9 characters: a maximum edit distance of 1 is used
+* else: a maximum edit distance of 2 is used
+
+You can change those using the `--distances` command line option and pass a
+comma separated list of string lenghts. For instance, `--distance 3,6,9` means
+
+* token length < 3 characters: won't be corrected
+* token length < 6 characters: a maximum edit distance of 1 is used
+* token length < 9 characters: a maximum edit distance of 2 is used
+* else a maximum edit distance of 3 is used
+
+It is strongly recommended to have an overall maximum edit distance of 2 for
+performance reasons.
 
 ## Todo
 

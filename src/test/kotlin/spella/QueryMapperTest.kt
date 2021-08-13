@@ -4,13 +4,31 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 
 class QueryMapperTest : DescribeSpec({
+    val allowedDistances = listOf(4, 9)
+
     describe("map") {
         it("returns the correction") {
             val tries = Tries().also { it.insert("en", "some phrase", 1.0) }
 
-            QueryMapper("some phrse", "en", tries).map().let {
+            QueryMapper("some phrse", "en", tries, allowedDistances).map().let {
                 it.value.string.shouldBe("some phrase")
                 it.original.string.shouldBe("some phrse")
+                it.score.shouldBe(1.0)
+            }
+        }
+
+        it("applies the allowed distances") {
+            val tries = Tries().also { it.insert("en", "some phrase", 1.0) }
+
+            QueryMapper("some phrse", "en", tries, allowedDistances = listOf(100)).map().let {
+                it.value.string.shouldBe("some, phrse")
+                it.original.string.shouldBe("some phrse")
+                it.score.shouldBe(0.0)
+            }
+
+            QueryMapper("some phse", "en", tries, allowedDistances = listOf(0, 0, 100)).map().let {
+                it.value.string.shouldBe("some phrase")
+                it.original.string.shouldBe("some phse")
                 it.score.shouldBe(1.0)
             }
         }
@@ -21,7 +39,7 @@ class QueryMapperTest : DescribeSpec({
                 it.insert("de", "some phrse", 2.0)
             }
 
-            QueryMapper("some phrse", "en", tries).map().let {
+            QueryMapper("some phrse", "en", tries, allowedDistances).map().let {
                 it.value.string.shouldBe("some phrase")
             }
         }
@@ -31,7 +49,7 @@ class QueryMapperTest : DescribeSpec({
                 it.insert("en", "some phrase", 1.0)
             }
 
-            QueryMapper("some phrse anoter phrase", "en", tries).map().let {
+            QueryMapper("some phrse anoter phrase", "en", tries, allowedDistances).map().let {
                 it.value.string.shouldBe("some phrase, anoter, phrase")
                 it.original.string.shouldBe("some phrse anoter phrase")
                 it.distance.shouldBe(1)
@@ -40,7 +58,7 @@ class QueryMapperTest : DescribeSpec({
         }
 
         it("returns the input as is when the trie for the specified language is null") {
-            QueryMapper("unkown phrse", "en", Tries()).map().let {
+            QueryMapper("unkown phrse", "en", Tries(), allowedDistances).map().let {
                 it.value.string.shouldBe("unkown phrse")
                 it.original.string.shouldBe("unkown phrse")
                 it.distance.shouldBe(0)
@@ -55,7 +73,7 @@ class QueryMapperTest : DescribeSpec({
                 it.insert("en", "summer", 3.0)
             }
 
-            QueryMapper("beahc bar cocktal summmer", "en", tries).map().let {
+            QueryMapper("beahc bar cocktal summmer", "en", tries, allowedDistances).map().let {
                 it.value.string.shouldBe("beach bar, cocktail, summer")
                 it.score.shouldBe(6.0)
                 it.distance.shouldBe(3)
@@ -65,8 +83,8 @@ class QueryMapperTest : DescribeSpec({
         it("supports corrections of parts when at the beginning") {
             val tries = Tries().also { it.insert("en", "another phrase", 1.0) }
 
-            QueryMapper("antoher", "en", tries).map().value.string.shouldBe("another")
-            QueryMapper("phrse", "en", tries).map().value.string.shouldBe("phrse")
+            QueryMapper("antoher", "en", tries, allowedDistances).map().value.string.shouldBe("another")
+            QueryMapper("phrse", "en", tries, allowedDistances).map().value.string.shouldBe("phrse")
         }
 
         it("returns the sum distance and score") {
@@ -75,7 +93,7 @@ class QueryMapperTest : DescribeSpec({
                 it.insert("en", "second phrase", 2.0)
             }
 
-            QueryMapper("fist phrase secnd phrase", "en", tries).map().let {
+            QueryMapper("fist phrase secnd phrase", "en", tries, allowedDistances).map().let {
                 it.value.string.shouldBe("first phrase, second phrase")
                 it.distance.shouldBe(2)
                 it.score.shouldBe(3.0)
@@ -85,13 +103,13 @@ class QueryMapperTest : DescribeSpec({
         it("splits words when neccessary") {
             val tries = Tries().also { it.insert("en", "some phrase", 1.0) }
 
-            QueryMapper("somephrase", "en", tries).map().value.string.shouldBe("some phrase")
+            QueryMapper("somephrase", "en", tries, allowedDistances).map().value.string.shouldBe("some phrase")
         }
 
         it("joins words when neccessary") {
             val tries = Tries().also { it.insert("en", "skyscraper", 1.0) }
 
-            QueryMapper("skys craper", "en", tries).map().value.string.shouldBe("skyscraper")
+            QueryMapper("skys craper", "en", tries, allowedDistances).map().value.string.shouldBe("skyscraper")
         }
 
         it("uses partial matches") {
@@ -99,7 +117,7 @@ class QueryMapperTest : DescribeSpec({
                 it.insert("en", "beach bar", 1.0)
             }
 
-            QueryMapper("bech", "en", tries).map().value.string.shouldBe("beach")
+            QueryMapper("bech", "en", tries, allowedDistances).map().value.string.shouldBe("beach")
         }
 
         it("does not use non-terminal partial matches") {
@@ -107,7 +125,7 @@ class QueryMapperTest : DescribeSpec({
                 it.insert("en", "beachbar", 1.0)
             }
 
-            QueryMapper("bech", "en", tries).map().value.string.shouldBe("bech")
+            QueryMapper("bech", "en", tries, allowedDistances).map().value.string.shouldBe("bech")
         }
 
         it("applies a max distance per word") {
@@ -117,7 +135,7 @@ class QueryMapperTest : DescribeSpec({
                 it.insert("en", "cocktail", 3.0)
             }
 
-            QueryMapper("skscrapr beahc bar coktail", "en", tries).map().let {
+            QueryMapper("skscrapr beahc bar coktail", "en", tries, allowedDistances).map().let {
                 it.value.string.shouldBe("skscrapr, beach bar, cocktail")
                 it.distance.shouldBe(2)
                 it.score.shouldBe(5.0)
@@ -133,7 +151,7 @@ class QueryMapperTest : DescribeSpec({
                 it.insert("en", "phrase", 5.0)
             }
 
-            QueryMapper("somee lnog phrse", "en", tries).map().let {
+            QueryMapper("somee lnog phrse", "en", tries, allowedDistances).map().let {
                 it.value.string.shouldBe("some long phrase")
                 it.score.shouldBe(1.0)
             }
@@ -145,7 +163,7 @@ class QueryMapperTest : DescribeSpec({
                 it.insert("en", "some long phrases", 2.0)
             }
 
-            QueryMapper("some long phrase", "en", tries).map().let {
+            QueryMapper("some long phrase", "en", tries, allowedDistances).map().let {
                 it.value.string.shouldBe("some long, phrase")
             }
         }
@@ -156,7 +174,7 @@ class QueryMapperTest : DescribeSpec({
                 it.insert("en", "phrase2", 1.0)
             }
 
-            QueryMapper("phrase1", "en", tries).map().value.string.shouldBe("phrase1")
+            QueryMapper("phrase1", "en", tries, allowedDistances).map().value.string.shouldBe("phrase1")
         }
 
         it("prefers corrections matching when transliterated") {
@@ -165,7 +183,7 @@ class QueryMapperTest : DescribeSpec({
                 it.insert("de", "schon", 2.0)
             }
 
-            QueryMapper("schoen", "de", tries).map().value.string.shouldBe("schön")
+            QueryMapper("schoen", "de", tries, allowedDistances).map().value.string.shouldBe("schön")
         }
     }
 })
