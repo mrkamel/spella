@@ -103,21 +103,21 @@ class QueryMapper(string: String, language: String, tries: Tries, allowedDistanc
      * Returns the max number of edits for the given word.
      */
 
-    fun maxEdits(word: String): Int {
+    private fun maxEdits(word: String): Int {
         allowedDistances.forEachIndexed { index, allowedDistance ->
             if (word.length < allowedDistance) {
                 return index
             }
         }
 
-        return allowedDistances.size + 1
+        return allowedDistances.size
     }
 
     /**
      * Lookup and cache the best correction of a single word.
      */
 
-    fun correctWord(word: String, maxEdits: Int): Correction? {
+    private fun correctWord(word: String, maxEdits: Int): Correction? {
         return wordCorrectionCache.getOrPut(word) {
             Automaton(string = word, maxEdits = maxEdits).correct(trie!!).minOrNull()
         }
