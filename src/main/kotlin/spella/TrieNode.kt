@@ -18,14 +18,11 @@ class TrieNode(parent: TrieNode? = null, char: Char? = null) {
 
         var node = this
 
-        for ((index, char) in phrase.withIndex()) {
+        for (char in phrase) {
             node = node.children.getOrPut(char) { TrieNode(parent = node, char = char) }
-
-            if (phrase.length <= index + 1 || phrase[index + 1] == ' ') {
-                node.isTerminal = true
-            }
         }
 
+        node.isTerminal = true
         node.score = score
     }
 

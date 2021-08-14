@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory
 class Spella : CliktCommand(name = "spella", treatUnknownOptionsAsArgs = true) {
     val bind by option("--bind", help = "The address to listen on").default("localhost")
     val port by option("--port", help = "The port to listen on").int().default(8888)
-    val split by option("--split", help = "Whether or not to split the phrases of the dictionary files").flag("--no-split", default = true)
     val distances by option("--distances", help = "A comma separated list of allowed edit distances. The numbers represent the string lenghts (default: 4,9)").default("4,9")
     val arguments by argument("files").multiple()
     val logger = LoggerFactory.getLogger("spella")
@@ -24,7 +23,7 @@ class Spella : CliktCommand(name = "spella", treatUnknownOptionsAsArgs = true) {
         arguments.forEach {
             logger.info("loading $it")
 
-            tries.addFile(it, split)
+            tries.addFile(it)
         }
 
         Server(tries, allowedDistances).start(bind, port)

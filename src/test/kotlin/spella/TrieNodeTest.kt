@@ -22,13 +22,12 @@ class TrieNodeTest : DescribeSpec({
             trieNode.parent.shouldBeNull()
         }
 
-        it("sets isTerminal to true for whitespaces and the last node") {
+        it("sets isTerminal to true for the last node") {
             val trieNode = TrieNode()
             trieNode.insert("some phrase", 1.0)
 
-            trieNode.lookup("some")!!.isTerminal.shouldBe(true)
+            trieNode.lookup("some")!!.isTerminal.shouldBe(false)
             trieNode.lookup("some phrase")!!.isTerminal.shouldBe(true)
-            trieNode.lookup("som")!!.isTerminal.shouldBe(false)
         }
 
         it("sets the score for the last node") {

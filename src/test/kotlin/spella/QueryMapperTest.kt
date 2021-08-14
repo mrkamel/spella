@@ -80,13 +80,6 @@ class QueryMapperTest : DescribeSpec({
             }
         }
 
-        it("supports corrections of parts when at the beginning") {
-            val tries = Tries().also { it.insert("en", "another phrase", 1.0) }
-
-            QueryMapper("antoher", "en", tries, allowedDistances).map().value.string.shouldBe("another")
-            QueryMapper("phrse", "en", tries, allowedDistances).map().value.string.shouldBe("phrse")
-        }
-
         it("returns the sum distance and score") {
             val tries = Tries().also {
                 it.insert("en", "first phrase", 1.0)
@@ -110,22 +103,6 @@ class QueryMapperTest : DescribeSpec({
             val tries = Tries().also { it.insert("en", "skyscraper", 1.0) }
 
             QueryMapper("skys craper", "en", tries, allowedDistances).map().value.string.shouldBe("skyscraper")
-        }
-
-        it("uses partial matches") {
-            val tries = Tries().also {
-                it.insert("en", "beach bar", 1.0)
-            }
-
-            QueryMapper("bech", "en", tries, allowedDistances).map().value.string.shouldBe("beach")
-        }
-
-        it("does not use non-terminal partial matches") {
-            val tries = Tries().also {
-                it.insert("en", "beachbar", 1.0)
-            }
-
-            QueryMapper("bech", "en", tries, allowedDistances).map().value.string.shouldBe("bech")
         }
 
         it("applies a max distance per word") {
@@ -160,11 +137,11 @@ class QueryMapperTest : DescribeSpec({
         it("does not prefer longer/greedy corrections when a single word correction has a smaller distance") {
             val tries = Tries().also {
                 it.insert("en", "phrase", 1.0)
-                it.insert("en", "some long phrases", 2.0)
+                it.insert("en", "some phrases", 2.0)
             }
 
-            QueryMapper("some long phrase", "en", tries, allowedDistances).map().let {
-                it.value.string.shouldBe("some long, phrase")
+            QueryMapper("some phrase", "en", tries, allowedDistances).map().let {
+                it.value.string.shouldBe("some, phrase")
             }
         }
 
