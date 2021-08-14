@@ -31,6 +31,12 @@ class QueryMapperTest : DescribeSpec({
                 it.original.string.shouldBe("some phse")
                 it.score.shouldBe(1.0)
             }
+
+            QueryMapper("some phse", "en", tries, allowedDistances = listOf(0)).map().let {
+                it.value.string.shouldBe("some, phse")
+                it.original.string.shouldBe("some phse")
+                it.score.shouldBe(0.0)
+            }
         }
 
         it("ignores the tries of other languages") {
