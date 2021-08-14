@@ -43,7 +43,7 @@ phrases are generally preferred.
 Please note, spella lowercases the phrases from the dictionary but does not
 normalize them in any other way, as there is hardly any normalization that fits
 every possible use case. Therefore, you better normalize the phrases in the
-dictionary files yourself beforehand.
+dictionary files yourself beforehand according to your needs.
 
 ## Requests
 
@@ -73,13 +73,6 @@ The criteria for choosing the best correction are:
 2. distance (smaller is better)
 3. whether or not a correction matches the original when transliterated
 4. the user supplied score (higher is better)
-
-## Splitting Dictionary Phrases
-
-It is possible to split all phrases present in the dictionary files with the
-goal to have all single words available for corrections as well. You can
-enable/disable that using the `--split/--no-split` command line option.
-Splitting is enabled by default.
 
 ## Max Edit Distance
 

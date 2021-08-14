@@ -24,7 +24,7 @@ class TriesTest : DescribeSpec({
         afterEach { unmockkAll() }
 
         it("reads and inserts the data from the specified file") {
-            tries.addFile("test.dic", split = false)
+            tries.addFile("test.dic")
 
             tries["en"]!!.lookup("some phrase")!!.asClue {
                 it.score.shouldBe(1.0)
@@ -35,18 +35,6 @@ class TriesTest : DescribeSpec({
                 it.score.shouldBe(2.0)
                 it.getPhrase().shouldBe("andere phrase")
             }
-        }
-
-        it("does not split the phrases when split is false") {
-            tries.addFile("test.dic", split = false)
-
-            tries["en"]!!.lookup("phrase").shouldBe(null)
-        }
-
-        it("splits the phrases and adds the single words when split is true") {
-            tries.addFile("test.dic", split = true)
-
-            tries["en"]!!.lookup("phrase").shouldNotBe(null)
         }
     }
 
