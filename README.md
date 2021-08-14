@@ -40,6 +40,11 @@ a frequency or score value. If there are multiple matches with the same
 distance, the one with a higher score wins. Correction is done greedily, i.e.
 phrases are generally preferred.
 
+Please note, spella lowercases the phrases from the dictionary but does not
+normalize them in any other way, as there is hardly any normalization that fits
+every possible use case. Therefore, you better normalize the phrases in the
+dictionary files yourself beforehand.
+
 ## Requests
 
 The server listens on port 8888 and uses a simple JSON based protocol.
@@ -95,7 +100,15 @@ comma separated list of string lenghts. For instance, `--distance 3,6,9` means
 It is strongly recommended to have an overall maximum edit distance of 2 for
 performance reasons.
 
+## Limitations
+
+Spella currently does not split words if the resulting phrase is not present in
+any dictionary file. For instance, the query "tabletennis", will only be
+corrected to "table tennis" if a dictionary file contains "table tennis". It is
+not enough to have "table" and "tennis" individually present in dictionary
+files. This was decided because the respective corrections can be low quality
+due to missing context.
+
 ## Todo
 
-* normalization/ignoring special characters
 * keeping the case while being case insensitive
