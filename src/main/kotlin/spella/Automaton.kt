@@ -17,11 +17,13 @@ class Automaton(string: String, maxEdits: Int) {
      * matches delimited by whitespace are treated as regular matches.
      */
 
-    fun correct(trieNode: TrieNode): List<Correction> {
-        return correctRecursive(trieNode, start())
+    fun correct(trieNodeList: TrieNodeList): List<Correction> {
+        return correctRecursive(trieNodeList, start())
     }
 
-    private fun correctRecursive(trieNode: TrieNode, state: State): List<Correction> {
+    private fun correctRecursive(trieNodeList: TrieNodeList, state: State): List<Correction> {
+        val trieNode = trieNodeList.head
+        val prevTrieNodes = trieNodeList.tail
         var res = ArrayList<Correction>()
 
         if (isMatch(state)) {
@@ -29,12 +31,12 @@ class Automaton(string: String, maxEdits: Int) {
 
             res.add(
                 Correction(
-                    value = trieNode.getPhrase().toTransliterableString(),
+                    value = trieNodeList.getPhrase().toTransliterableString(),
                     original = transliterableString,
                     distance = distance,
-                    score = trieNode.score,
+                    score = trieNodeList.score,
                     isTerminal = trieNode.isTerminal,
-                    trieNode = trieNode,
+                    trieNodeList = trieNodeList,
                 )
             )
         }
@@ -43,7 +45,18 @@ class Automaton(string: String, maxEdits: Int) {
             var newState = step(state, char, trieNode.char)
 
             if (canMatch(newState)) {
-                res.addAll(correctRecursive(newTrieNode, newState))
+                res.addAll(correctRecursive(TrieNodeList(newTrieNode, prevTrieNodes), newState))
+            }
+        }
+
+        // Additionally try to split the current word and continue correcting
+        // from the root node.
+
+        if (trieNode.isTerminal) {
+            var newState = step(state, ' ', trieNode.char)
+
+            if (canMatch(newState)) {
+                res.addAll(correctRecursive(TrieNodeList(trieNode.root(), TrieNodeList(trieNode, prevTrieNodes)), newState))
             }
         }
 

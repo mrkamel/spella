@@ -9,6 +9,6 @@ object CorrectionFactory {
         isTerminal: Boolean = true,
         trieNode: TrieNode? = null,
     ): Correction {
-        return Correction(value, original, distance, score, isTerminal, trieNode)
+        return Correction(value, original, distance, score, isTerminal, trieNode?.let { TrieNodeList(trieNode) })
     }
 }

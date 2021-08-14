@@ -4,7 +4,7 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 
 class QueryMapperTest : DescribeSpec({
-    val allowedDistances = listOf(4, 9)
+    val allowedDistances = listOf(3, 10)
 
     describe("map") {
         it("returns the correction") {
@@ -20,22 +20,22 @@ class QueryMapperTest : DescribeSpec({
         it("applies the allowed distances") {
             val tries = Tries().also { it.insert("en", "some phrase", 1.0) }
 
-            QueryMapper("some phrse", "en", tries, allowedDistances = listOf(100)).map().let {
+            QueryMapper("some phrse", "en", tries, allowedDistances = listOf(11)).map().let {
                 it.value.string.shouldBe("some, phrse")
                 it.original.string.shouldBe("some phrse")
                 it.score.shouldBe(0.0)
             }
 
-            QueryMapper("some phse", "en", tries, allowedDistances = listOf(0, 0, 100)).map().let {
+            QueryMapper("some phrse", "en", tries, allowedDistances = listOf(4, 10)).map().let {
                 it.value.string.shouldBe("some phrase")
-                it.original.string.shouldBe("some phse")
+                it.original.string.shouldBe("some phrse")
                 it.score.shouldBe(1.0)
             }
 
-            QueryMapper("some phse", "en", tries, allowedDistances = listOf(0)).map().let {
-                it.value.string.shouldBe("some, phse")
-                it.original.string.shouldBe("some phse")
-                it.score.shouldBe(0.0)
+            QueryMapper("some phrse", "en", tries, allowedDistances = listOf(0)).map().let {
+                it.value.string.shouldBe("some phrase")
+                it.original.string.shouldBe("some phrse")
+                it.score.shouldBe(1.0)
             }
         }
 
@@ -47,6 +47,18 @@ class QueryMapperTest : DescribeSpec({
 
             QueryMapper("some phrse", "en", tries, allowedDistances).map().let {
                 it.value.string.shouldBe("some phrase")
+            }
+        }
+
+        it("splits words and starts from the root when neccessary") {
+            val tries = Tries().also {
+                it.insert("en", "some", 1.0)
+                it.insert("en", "phrase", 2.0)
+            }
+
+            QueryMapper("somephrase", "en", tries, allowedDistances).map().let {
+                it.value.string.shouldBe("some phrase")
+                it.score.shouldBe(3.0)
             }
         }
 

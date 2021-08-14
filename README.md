@@ -78,29 +78,20 @@ The criteria for choosing the best correction are:
 
 Currently, the default max allowed edit distances are:
 
-* token length < 4 characters: won't be corrected
-* token length < 9 characters: a maximum edit distance of 1 is used
+* token length <= 3 characters: won't be corrected
+* token length <= 10 characters: a maximum edit distance of 1 is used
 * else: a maximum edit distance of 2 is used
 
 You can change those using the `--distances` command line option and pass a
 comma separated list of string lenghts. For instance, `--distance 3,6,9` means
 
-* token length < 3 characters: won't be corrected
-* token length < 6 characters: a maximum edit distance of 1 is used
-* token length < 9 characters: a maximum edit distance of 2 is used
+* token length <= 3 characters: won't be corrected
+* token length <= 6 characters: a maximum edit distance of 1 is used
+* token length <= 9 characters: a maximum edit distance of 2 is used
 * else a maximum edit distance of 3 is used
 
 It is strongly recommended to have an overall maximum edit distance of 2 for
 performance reasons.
-
-## Limitations
-
-Spella currently does not split words if the resulting phrase is not present in
-any dictionary file. For instance, the query "tabletennis", will only be
-corrected to "table tennis" if a dictionary file contains "table tennis". It is
-not enough to have "table" and "tennis" individually present in dictionary
-files. This was decided because the respective corrections can be low quality
-due to missing context.
 
 ## Todo
 
