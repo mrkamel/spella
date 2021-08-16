@@ -154,8 +154,9 @@ class QueryMapperTest : DescribeSpec({
 
         it("does not prefer longer/greedy corrections when a single word correction has a smaller distance") {
             val tries = Tries().also {
-                it.insert("en", "phrase", 1.0)
-                it.insert("en", "some phrases", 2.0)
+                it.insert("en", "some", 1.0)
+                it.insert("en", "phrase", 2.0)
+                it.insert("en", "some phrases", 3.0)
             }
 
             QueryMapper("some phrase", "en", tries, allowedDistances).map().let {

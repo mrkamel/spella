@@ -66,6 +66,7 @@ class QueryMapper(string: String, language: String, tries: Tries, allowedDistanc
         lastIndex: Int,
         trieNodeList: TrieNodeList,
         phrase: Boolean = false,
+        distanceSum: Int = 0,
         wordDistanceSum: Int = 0,
         maxRestarts: Int = Int.MAX_VALUE,
     ): Correction? {
@@ -80,11 +81,13 @@ class QueryMapper(string: String, language: String, tries: Tries, allowedDistanc
         val newWordDistanceSum = wordDistanceSum + (correctWord(word, maxEdits)?.distance ?: word.length)
 
         Automaton(string = string, maxEdits = maxEdits).correct(trieNodeList).forEach { correction ->
+            val newDistanceSum = distanceSum + correction.distance
+
             // Skip the correction if it exceeds the current maximum number of restarts
             if (correction.numRestarts > curMaxRestarts) return@forEach
 
             // Skip the phrase correction if the sum of word correction distances is better
-            if (correction.distance > newWordDistanceSum) return@forEach
+            if (newDistanceSum > newWordDistanceSum) return@forEach
 
             var currentCorrection = correction
 
@@ -95,6 +98,7 @@ class QueryMapper(string: String, language: String, tries: Tries, allowedDistanc
                     lastIndex,
                     correction.trieNodeList!!,
                     phrase = true,
+                    distanceSum = newDistanceSum,
                     wordDistanceSum = newWordDistanceSum,
                     maxRestarts = correction.numRestarts,
                 )?.let { longerCorrection ->
