@@ -68,23 +68,18 @@ class QueryMapper(string: String, language: String, tries: Tries, allowedDistanc
         phrase: Boolean = false,
         distanceSum: Int = 0,
         wordDistanceSum: Int = 0,
-        maxRestarts: Int = Int.MAX_VALUE,
     ): Correction? {
         val word = words[firstIndex]
         val maxEdits = maxEdits(word)
         val string = if (phrase) " $word" else word
         var bestCorrection: Correction? = null
-        var curMaxRestarts = maxRestarts
 
         // Try to correct the current word individually as a check metric and add its
         // distance to the sum or add the word length when no correction can be found
         val newWordDistanceSum = wordDistanceSum + (correctWord(word, maxEdits)?.distance ?: word.length)
 
-        Automaton(string = string, maxEdits = maxEdits).correct(trieNodeList).forEach { correction ->
+        Automaton(string, trieNodeList, maxEdits).correct().forEach { correction ->
             val newDistanceSum = distanceSum + correction.distance
-
-            // Skip the correction if it exceeds the current maximum number of restarts
-            if (correction.numRestarts > curMaxRestarts) return@forEach
 
             // Skip the phrase correction if the sum of word correction distances is better
             if (newDistanceSum > newWordDistanceSum) return@forEach
@@ -100,7 +95,6 @@ class QueryMapper(string: String, language: String, tries: Tries, allowedDistanc
                     phrase = true,
                     distanceSum = newDistanceSum,
                     wordDistanceSum = newWordDistanceSum,
-                    maxRestarts = correction.numRestarts,
                 )?.let { longerCorrection ->
                     currentCorrection = Correction(
                         value = longerCorrection.value,
@@ -114,10 +108,7 @@ class QueryMapper(string: String, language: String, tries: Tries, allowedDistanc
             }
 
             if (currentCorrection.isTerminal) {
-                bestCorrectionOf(bestCorrection ?: currentCorrection, currentCorrection).let {
-                    bestCorrection = it
-                    curMaxRestarts = it.numRestarts
-                }
+                bestCorrection = bestCorrectionOf(bestCorrection ?: currentCorrection, currentCorrection)
             }
         }
 
@@ -144,7 +135,7 @@ class QueryMapper(string: String, language: String, tries: Tries, allowedDistanc
 
     private fun correctWord(word: String, maxEdits: Int): Correction? {
         return wordCorrectionCache.getOrPut(word) {
-            Automaton(string = word, maxEdits = maxEdits).correct(trieNodeList).filter { it.isTerminal }.minOrNull()
+            Automaton(word, trieNodeList, maxEdits).correct().filter { it.isTerminal }.minOrNull()
         }
     }
 

@@ -5,9 +5,10 @@ package spella
 
 data class State(val indices: List<Int>, val values: List<Int>)
 
-class Automaton(string: String, maxEdits: Int) {
+class Automaton(string: String, trieNodeList: TrieNodeList, maxEdits: Int) {
     val string = string
     val maxEdits = maxEdits
+    val trieNodeList = trieNodeList
     val transliterableString: TransliterableString by lazy { string.toTransliterableString() }
 
     /**
@@ -17,13 +18,13 @@ class Automaton(string: String, maxEdits: Int) {
      * matches delimited by whitespace are treated as regular matches.
      */
 
-    fun correct(trieNodeList: TrieNodeList): List<Correction> {
+    fun correct(): List<Correction> {
         return correctRecursive(trieNodeList, start())
     }
 
-    private fun correctRecursive(trieNodeList: TrieNodeList, state: State): List<Correction> {
-        val trieNode = trieNodeList.head
-        val prevTrieNodes = trieNodeList.tail
+    private fun correctRecursive(curTrieNodeList: TrieNodeList, state: State): List<Correction> {
+        val trieNode = curTrieNodeList.head
+        val prevTrieNodes = curTrieNodeList.tail
         var res = ArrayList<Correction>()
 
         if (isMatch(state)) {
@@ -31,12 +32,12 @@ class Automaton(string: String, maxEdits: Int) {
 
             res.add(
                 Correction(
-                    value = trieNodeList.getPhrase().toTransliterableString(),
+                    value = curTrieNodeList.getPhrase().toTransliterableString(),
                     original = transliterableString,
                     distance = distance,
-                    score = trieNodeList.score,
+                    score = curTrieNodeList.score,
                     isTerminal = trieNode.isTerminal,
-                    trieNodeList = trieNodeList,
+                    trieNodeList = curTrieNodeList,
                 )
             )
         }
@@ -52,7 +53,7 @@ class Automaton(string: String, maxEdits: Int) {
         // Additionally try to split the current word and continue correcting
         // from the root node.
 
-        if (trieNode.isTerminal) {
+        if (trieNode.isTerminal && state.indices.size > 0 && state.indices[0] > 0) {
             var newState = step(state, ' ', trieNode.char)
 
             if (canMatch(newState)) {

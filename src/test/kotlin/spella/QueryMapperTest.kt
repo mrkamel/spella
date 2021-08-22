@@ -52,12 +52,24 @@ class QueryMapperTest : DescribeSpec({
 
         it("splits words and starts from the root when neccessary") {
             val tries = Tries().also {
+                it.insert("en", "some phrase", 1.0)
+                it.insert("en", "keyword", 2.0)
+            }
+
+            QueryMapper("some phrasekeyword", "en", tries, allowedDistances).map().let {
+                it.value.string.shouldBe("some phrase keyword")
+                it.score.shouldBe(3.0)
+            }
+        }
+
+        it("does not restart from the root at the beginning of words") {
+            val tries = Tries().also {
                 it.insert("en", "some", 1.0)
                 it.insert("en", "phrase", 2.0)
             }
 
-            QueryMapper("somephrase", "en", tries, allowedDistances).map().let {
-                it.value.string.shouldBe("some phrase")
+            QueryMapper("some phrase", "en", tries, allowedDistances).map().let {
+                it.value.string.shouldBe("some, phrase")
                 it.score.shouldBe(3.0)
             }
         }
@@ -111,13 +123,13 @@ class QueryMapperTest : DescribeSpec({
             }
         }
 
-        it("splits words when neccessary") {
+        it("splits words of phrases when neccessary") {
             val tries = Tries().also { it.insert("en", "some phrase", 1.0) }
 
             QueryMapper("somephrase", "en", tries, allowedDistances).map().value.string.shouldBe("some phrase")
         }
 
-        it("joins words when neccessary") {
+        it("joins words of phrases when neccessary") {
             val tries = Tries().also { it.insert("en", "skyscraper", 1.0) }
 
             QueryMapper("skys craper", "en", tries, allowedDistances).map().value.string.shouldBe("skyscraper")
@@ -137,7 +149,7 @@ class QueryMapperTest : DescribeSpec({
             }
         }
 
-        it("prefers longer/greedy corrections") {
+        it("prefers greedy corrections") {
             val tries = Tries().also {
                 it.insert("en", "some long phrase", 1.0)
                 it.insert("en", "some long", 2.0)
@@ -152,7 +164,7 @@ class QueryMapperTest : DescribeSpec({
             }
         }
 
-        it("does not prefer longer/greedy corrections when a single word correction has a smaller distance") {
+        it("does not prefer greedy corrections when a single word correction has a smaller distance") {
             val tries = Tries().also {
                 it.insert("en", "some", 1.0)
                 it.insert("en", "phrase", 2.0)
@@ -161,6 +173,18 @@ class QueryMapperTest : DescribeSpec({
 
             QueryMapper("some phrase", "en", tries, allowedDistances).map().let {
                 it.value.string.shouldBe("some, phrase")
+            }
+        }
+
+        it("prefers greedy corrections when the overall distance is equal or better than the sum of single word distances") {
+            val tries = Tries().also {
+                it.insert("en", "nice", 2.0)
+                it.insert("en", "phrase", 2.0)
+                it.insert("en", "nicer phrases", 3.0)
+            }
+
+            QueryMapper("nicer phrase", "en", tries, allowedDistances).map().let {
+                it.value.string.shouldBe("nicer phrases")
             }
         }
 

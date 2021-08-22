@@ -8,8 +8,7 @@ engines using a levenshtein automaton and a Trie. Written in kotlin.
   character transliterations (german umlauts) with a distance of one.
 * Applies a max edit distance per word.
 * Uses several optimizations like re-using trie nodes when correcting
-  phrases to achieve single digit millisecond response times most of the
-  time.
+  phrases.
 * Applies multiple rules for choosing the best correction, including a
   user supplied score.
 
@@ -95,4 +94,5 @@ performance reasons.
 
 ## Todo
 
+* Score transliterations with 0.5 instead of 1 and remove from corrections
 * keeping the case while being case insensitive
