@@ -12,15 +12,16 @@ class Correction(
     distance: Int,
     score: Double,
     isTerminal: Boolean = true,
-    trieNode: TrieNode? = null,
+    trieNodeList: TrieNodeList? = null,
 ) : Comparable<Correction> {
     val value = value
     val original = original
     val distance = distance
     val score = score
     val isTerminal = isTerminal
-    val trieNode = trieNode
+    val trieNodeList = trieNodeList
     val matchesTransliterated: Boolean by lazy { value.transliteratedString == original.transliteratedString }
+    val numRestarts: Int by lazy { if (trieNodeList == null) 0 else trieNodeList.size }
 
     /**
      * A correction is better/smaller when

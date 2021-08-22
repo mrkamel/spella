@@ -5,9 +5,10 @@ package spella
 
 data class State(val indices: List<Int>, val values: List<Int>)
 
-class Automaton(string: String, maxEdits: Int) {
+class Automaton(string: String, trieNodeList: TrieNodeList, maxEdits: Int) {
     val string = string
     val maxEdits = maxEdits
+    val trieNodeList = trieNodeList
     val transliterableString: TransliterableString by lazy { string.toTransliterableString() }
 
     /**
@@ -17,11 +18,13 @@ class Automaton(string: String, maxEdits: Int) {
      * matches delimited by whitespace are treated as regular matches.
      */
 
-    fun correct(trieNode: TrieNode): List<Correction> {
-        return correctRecursive(trieNode, start())
+    fun correct(): List<Correction> {
+        return correctRecursive(trieNodeList, start())
     }
 
-    private fun correctRecursive(trieNode: TrieNode, state: State): List<Correction> {
+    private fun correctRecursive(curTrieNodeList: TrieNodeList, state: State): List<Correction> {
+        val trieNode = curTrieNodeList.head
+        val prevTrieNodes = curTrieNodeList.tail
         var res = ArrayList<Correction>()
 
         if (isMatch(state)) {
@@ -29,12 +32,12 @@ class Automaton(string: String, maxEdits: Int) {
 
             res.add(
                 Correction(
-                    value = trieNode.getPhrase().toTransliterableString(),
+                    value = curTrieNodeList.getPhrase().toTransliterableString(),
                     original = transliterableString,
                     distance = distance,
-                    score = trieNode.score,
+                    score = curTrieNodeList.score,
                     isTerminal = trieNode.isTerminal,
-                    trieNode = trieNode,
+                    trieNodeList = curTrieNodeList,
                 )
             )
         }
@@ -43,7 +46,18 @@ class Automaton(string: String, maxEdits: Int) {
             var newState = step(state, char, trieNode.char)
 
             if (canMatch(newState)) {
-                res.addAll(correctRecursive(newTrieNode, newState))
+                res.addAll(correctRecursive(TrieNodeList(newTrieNode, prevTrieNodes), newState))
+            }
+        }
+
+        // Additionally try to split the current word and continue correcting
+        // from the root node.
+
+        if (trieNode.isTerminal && state.indices.size > 0 && state.indices[0] > 0) {
+            var newState = step(state, ' ', trieNode.char)
+
+            if (canMatch(newState)) {
+                res.addAll(correctRecursive(TrieNodeList(trieNode.root(), TrieNodeList(trieNode, prevTrieNodes)), newState))
             }
         }
 
