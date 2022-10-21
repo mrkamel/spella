@@ -151,6 +151,21 @@ class QueryMapperTest : DescribeSpec({
             }
         }
 
+        it("does not use partial corrections") {
+            val tries = Tries().also {
+                it.insert("en", "phrase", 1.0)
+                it.insert("en", "another phrase", 2.0)
+            }
+
+            QueryMapper("phras", "en", tries, allowedDistances).map().let {
+                it.value.string.shouldBe("phrase")
+            }
+
+            QueryMapper("another phras", "en", tries, allowedDistances).map().let {
+                it.value.string.shouldBe("another phrase")
+            }
+        }
+
         it("prefers corrections with smaller distance") {
             val tries = Tries().also {
                 it.insert("en", "phrase1", 1.0)

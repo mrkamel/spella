@@ -119,7 +119,7 @@ class QueryMapper(string: String, language: String, tries: Tries, allowedDistanc
 
     private fun correctWord(word: String, maxEdits: Int): Correction? {
         return wordCorrectionCache.getOrPut(word) {
-            Automaton(string = word, maxEdits = maxEdits).correct(trie!!).minOrNull()
+            Automaton(string = word, maxEdits = maxEdits).correct(trie!!).filter { it.isTerminal }.minOrNull()
         }
     }
 
